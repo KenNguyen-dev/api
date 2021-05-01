@@ -11,8 +11,11 @@ var usersRouter = require('./routes/users');
 var voucherTypeAPI = require('./routes/voucherTypeAPI')
 var partnerTypeAPI = require('./routes/partnerTypeAPI')
 var partnerAPI = require('./routes/partnerAPI')
+var voucherAPI = require('./routes/voucherAPI')
 
 var app = express();
+// require('dotenv').config({path:api+'/.env'});
+require('dotenv').config()
 
 //#region View Engine
 // view engine setup
@@ -34,6 +37,7 @@ app.use('/users', usersRouter);
 app.use('/vouchertype',voucherTypeAPI)
 app.use('/partnertype',partnerTypeAPI)
 app.use('/partner',partnerAPI)
+app.use('/voucher',voucherAPI)
 
 //#region Catch Error
 // catch 404 and forward to error handler
