@@ -43,6 +43,7 @@ var authenticateJWT = (req) => {
     var checkAuth = false;
 
     const authHeader = req.headers.authorization;
+    console.log(authHeader)
     if (authHeader) {
         const token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.SECRET.toString(), (err, user) => {
@@ -91,21 +92,25 @@ const executeQuery = function (res, query, parameters) {
 
 router.get('/list',(req,res,next)=>
 {
-    db.connect().then(() => {
-        var queryString = 'select * from voucher';
-        db.request().query(queryString, (err, result) => {
-          if(err) console.log(err)
-            console.table(result.recordset)
-            res.send(result.recordset)
+    var checkAuthenticate = authenticateJWT(req)
+    if(checkAuthenticate)
+    {
+        db.connect().then(() => {
+            var queryString = `select * from voucher where doi_tac_id = '${req.body.id}'`
+            db.request().query(queryString, (err, result) => {
+            if(err) console.log(err)
+                console.table(result.recordset)
+                res.send(result.recordset)
+            })
         })
-    })
+    }
 })
 
 router.post('/add',upload.single('hinh_anh'),(req,res,next)=>{
 
-    // var checkAuthenticate = authenticateJWT(req)
-    // if(checkAuthenticate)
-    // {
+    var checkAuthenticate = authenticateJWT(req)
+    if(checkAuthenticate)
+    {
         var parameters = getParameter(req)
         
         if(!req.file)
@@ -144,12 +149,12 @@ router.post('/add',upload.single('hinh_anh'),(req,res,next)=>{
                                 '${data.diem_toi_thieu}')
                 END;`
                 executeQuery(res,queryString,parameters); 
-        }    
-    // }
-    // // else{
-    // //     res.send("Failed")
-    // // }
-    
+        }else{
+        res.send("Failed")
+        }
+    }else{
+        res.send("Failed")
+    }
 })
 
 router.get('/details',(req,res,next)=>
@@ -168,11 +173,16 @@ router.get('/details',(req,res,next)=>
 
 router.delete('/delete',(req,res,next)=>
 {
-    
-    var parameters = getParameter(req)
-    console.log('This is request body: '+req.body.id)
-    var queryString = `DELETE FROM [voucher] where id='${req.body.id}'`
-    executeQuery(res,queryString,parameters);
+    var checkAuthenticate = authenticateJWT(req)
+    if(checkAuthenticate)
+    {
+        var parameters = getParameter(req)
+        console.log('This is request body: '+req.body.id)
+        var queryString = `DELETE FROM [voucher] where id='${req.body.id}'`
+        executeQuery(res,queryString,parameters);
+    }else{
+        res.send("Failed")
+    }
 })
 
 router.put('/update',(req,res,next)=>
