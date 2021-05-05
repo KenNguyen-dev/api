@@ -4,7 +4,7 @@ var db = require('../config/dbconfig')
 var jwt = require('jsonwebtoken')
 var multer  = require('multer')
 path = require('path');
-const DIR = './public/images/upload_images';
+const DIR = './public/images';
 
 
 getParameter=(req)=>{
@@ -32,7 +32,7 @@ let storage = multer.diskStorage({
       callback(null, DIR);
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+      cb(null, file.fieldname + '-' + file.originalname + path.extname(file.originalname));
     }
 });
  
@@ -106,6 +106,19 @@ router.get('/list',(req,res,next)=>
     }
 })
 
+router.get('/cardlist',(req,res,next)=>
+{
+    db.connect().then(() => {
+        var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from [voucher]`
+        db.request().query(queryString, (err, result) => {
+        if(err) console.log(err)
+            console.table(result.recordset)
+            res.send(result.recordset)
+        })
+    })
+    
+})
+
 router.post('/add',upload.single('hinh_anh'),(req,res,next)=>{
 
     var checkAuthenticate = authenticateJWT(req)
@@ -120,6 +133,7 @@ router.post('/add',upload.single('hinh_anh'),(req,res,next)=>{
 
         var file = req.file;
         var img_name = file.originalname;
+        console.log(file)
         var data =JSON.parse(req.body.data)
 
         if(file.mimetype == "image/jpeg" ||file.mimetype == "image/png"||file.mimetype == "image/gif" )
@@ -144,7 +158,7 @@ router.post('/add',upload.single('hinh_anh'),(req,res,next)=>{
                                 '${data.loai_voucher_id}',
                                 '${data.so_luong}',
                                 '${data.trang_thai}',
-                                '${img_name}',
+                                'http://localhost:9000/images/${file.filename}',
                                 '${data.doi_tac_id}',
                                 '${data.diem_toi_thieu}')
                 END;`

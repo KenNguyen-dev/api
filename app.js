@@ -14,7 +14,6 @@ var partnerAPI = require('./routes/partnerAPI')
 var voucherAPI = require('./routes/voucherAPI')
 
 var app = express();
-// require('dotenv').config({path:api+'/.env'});
 require('dotenv').config()
 
 //#region View Engine
@@ -28,7 +27,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('*/images',express.static('public/images'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
