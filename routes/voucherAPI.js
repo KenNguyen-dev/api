@@ -115,8 +115,19 @@ router.get('/cardlist',(req,res,next)=>
             console.table(result.recordset)
             res.send(result.recordset)
         })
-    })
-    
+    })   
+})
+
+router.get('/voucherdetail',(req,res,next)=>
+{
+    db.connect().then(() => {
+        var queryString = `select hinh_anh,chu_thich_day_du,code_voucher,ten from [voucher] where id='${req.query.id}'`
+        db.request().query(queryString, (err, result) => {
+        if(err) console.log(err)
+            console.table(result.recordset[0])
+            res.send(result.recordset[0])
+        })
+    })   
 })
 
 router.post('/add',upload.single('hinh_anh'),(req,res,next)=>{
