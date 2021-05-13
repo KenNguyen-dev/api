@@ -31,9 +31,9 @@ app.use(cookieParser());
 app.use("*/images", express.static("public/images"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
-});
+// app.get("/*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "build", "index.html"));
+// });
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
