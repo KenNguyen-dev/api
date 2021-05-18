@@ -90,12 +90,12 @@ const executeQuery = function (res, query, parameters) {
 };
 
 router.get("/list", (req, res, next) => {
-  db.connect().then(() => {
+  db.connect(() => {
     var queryString = "select * from doi_tac";
-    db.request().query(queryString, (err, result) => {
+    db.query(queryString, (err, result) => {
       if (err) console.log(err);
-      console.table(result.recordset);
-      res.send(result.recordset);
+      console.table(result);
+      res.send(result);
     });
   });
 });

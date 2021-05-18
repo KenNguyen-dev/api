@@ -1,19 +1,18 @@
-//const sql = require('mssql/msnodesqlv8')
-const sql = require("mssql");
-//msnodesqlv8 module is requiered for Windows Authentication without using Username and Password
+const sql = require("mysql");
 
 var config = {
-  user: "sa",
-  password: "123",
-  database: "voucherDB",
-  server: "localhost",
-  //driver: 'msnodesqlv8',
-  options: {
-    trustedConnection: true,
-    enableArithAort: true,
-  },
+  host: "localhost",
+  user: "root",
+  password: "123bebong",
+  database: "voucherdb",
+  insecureAuth: true,
 };
 
-const db = new sql.ConnectionPool(config);
+const db = new sql.createConnection(config);
+
+db.connect((error) => {
+  if (error) throw error;
+  console.log("Successfully connected to the database.");
+});
 
 module.exports = db;

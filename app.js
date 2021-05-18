@@ -7,8 +7,8 @@ var cors = require("cors");
 const bodyParser = require("body-parser");
 
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
 var voucherTypeAPI = require("./routes/voucherTypeAPI");
+var serviceAPI = require("./routes/serviceAPI");
 var partnerTypeAPI = require("./routes/partnerTypeAPI");
 var partnerAPI = require("./routes/partnerAPI");
 var voucherAPI = require("./routes/voucherAPI");
@@ -36,7 +36,7 @@ app.use(bodyParser.json());
 // });
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use("/service", serviceAPI);
 app.use("/vouchertype", voucherTypeAPI);
 app.use("/partnertype", partnerTypeAPI);
 app.use("/partner", partnerAPI);

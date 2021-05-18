@@ -4,7 +4,7 @@ var db = require("../config/dbconfig");
 
 router.get("/list", (req, res, next) => {
   db.connect(() => {
-    var queryString = "select * from loai_voucher";
+    var queryString = "select * from dich_vu";
     db.query(queryString, (err, result) => {
       if (err) console.log(err);
       console.table(result);
@@ -15,7 +15,7 @@ router.get("/list", (req, res, next) => {
 
 router.post("/add", (req, res, next) => {
   db.connect(() => {
-    var queryString = `INSERT INTO loai_voucher (id,ten) VALUES ('${req.body.id}','${req.body.ten}')`;
+    var queryString = `INSERT INTO dich_vu (id,ten) VALUES ('${req.body.id}','${req.body.ten}')`;
     db.query(queryString, (err) => {
       if (err) {
         console.log(err);
@@ -29,7 +29,7 @@ router.post("/add", (req, res, next) => {
 
 router.delete("/delete", (req, res, next) => {
   db.connect(() => {
-    var queryString = `DELETE FROM loai_voucher where id='${req.body.id}'`;
+    var queryString = `DELETE FROM dich_vu where id='${req.body.id}'`;
     db.query(queryString, (err) => {
       if (err) console.log(err);
       res.send("Delete success");
@@ -39,7 +39,7 @@ router.delete("/delete", (req, res, next) => {
 
 router.put("/update", (req, res, next) => {
   db.connect(() => {
-    var queryString = `UPDATE loai_voucher SET ten='${req.body.ten}' where id='${req.body.id}'`;
+    var queryString = `UPDATE dich_vu SET ten='${req.body.ten}' where id='${req.body.id}'`;
     db.query(queryString, (err) => {
       if (err) console.log(err);
       res.send("Update success");
