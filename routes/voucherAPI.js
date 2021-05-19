@@ -133,7 +133,7 @@ router.post("/add", upload.single("hinh_anh"), (req, res, next) => {
                                 '${data.loai_voucher_id}',
                                 '${data.so_luong}',
                                 '${data.trang_thai}',
-                                'http://localhost:9000/images/${file.filename}',
+                                'https://gift-api-v1.herokuapp.com/images/${file.filename}',
                                 '${data.doi_tac_id}',
                                 '${data.diem_toi_thieu}',
                                 '${data.dich_vu_id}')`;
