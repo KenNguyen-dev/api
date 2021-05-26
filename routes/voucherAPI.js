@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var db = require("../config/dbconfig");
+const fetch = require("node-fetch");
 // var jwt = require("jsonwebtoken");
 var multer = require("multer");
 path = require("path");
@@ -38,6 +39,15 @@ let upload = multer({ storage: storage });
 //     }
 //     return checkAuth
 // };
+
+router.get("/proxy", (req, response) => {
+  const url = req.query.url;
+  if (url && url.length > 0) {
+    fetch(url)
+      .then((res) => res.body.pipe(response))
+      .catch((err) => console.log(err));
+  }
+});
 
 router.post("/list", (req, res, next) => {
   db.connect(() => {
