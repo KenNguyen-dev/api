@@ -1,25 +1,26 @@
 var express = require("express");
 var router = express.Router();
 var db = require("../config/dbconfig");
-const fetch = require("node-fetch");
+const firebase = require("../config/firebase");
 // var jwt = require("jsonwebtoken");
 var multer = require("multer");
+const { memoryStorage } = require("multer");
 path = require("path");
 const DIR = "./public/images";
 
-let storage = multer.diskStorage({
-  destination: function (req, file, callback) {
-    callback(null, DIR);
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + file.originalname + path.extname(file.originalname)
-    );
-  },
-});
+// let storage = multer.diskStorage({
+//   destination: function (req, file, callback) {
+//     callback(null, DIR);
+//   },
+//   filename: function (req, file, cb) {
+//     cb(
+//       null,
+//       file.fieldname + "-" + file.originalname + path.extname(file.originalname)
+//     );
+//   },
+// });
 
-let upload = multer({ storage: storage });
+let upload = multer({ storage: memoryStorage() });
 
 // var authenticateJWT = (req) => {
 //     var checkAuth = false;
@@ -39,15 +40,6 @@ let upload = multer({ storage: storage });
 //     }
 //     return checkAuth
 // };
-
-router.get("/proxy", (req, response) => {
-  const url = req.query.url;
-  if (url && url.length > 0) {
-    fetch(url)
-      .then((res) => res.body.pipe(response))
-      .catch((err) => console.log(err));
-  }
-});
 
 router.post("/list", (req, res, next) => {
   db.connect(() => {
@@ -97,6 +89,7 @@ router.post("/getvoucher", (req, res, next) => {
     var queryString = `CALL nhanVoucher('${req.body.khach_hang_id}','${req.body.voucher_id}')`;
     db.query(queryString, (err, result) => {
       if (err) res.send(err);
+      console.log(result);
       if (result.affectedRows != 0) {
         res.status(200).send("Success");
       } else {
@@ -132,6 +125,18 @@ router.post("/add", upload.single("hinh_anh"), (req, res, next) => {
     file.mimetype == "image/png" ||
     file.mimetype == "image/gif"
   ) {
+    const blob = firebase.bucket.file(req.file.originalname);
+    const blobWriter = blob.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+    });
+
+    blobWriter.on("error", (err) => {
+      console.log(err);
+    });
+
+    blobWriter.end(req.file.buffer);
     var queryString = `CALL themVoucher('${data.doi_tac_id}-${data.code_voucher}',
                                 '${data.ten}',
                                 '${data.chu_thich_don_gian}',
@@ -143,11 +148,10 @@ router.post("/add", upload.single("hinh_anh"), (req, res, next) => {
                                 '${data.loai_voucher_id}',
                                 '${data.so_luong}',
                                 '${data.trang_thai}',
-                                'https://gift-api-v1.herokuapp.com/images/${file.filename}',
+                                'https://firebasestorage.googleapis.com/v0/b/vouchermanager-9cf2e.appspot.com/o/${file.originalname}?alt=media',
                                 '${data.doi_tac_id}',
                                 '${data.diem_toi_thieu}',
                                 '${data.dich_vu_id}')`;
-    console.log(queryString);
     db.connect(() => {
       db.query(queryString, (err) => {
         if (err) {
