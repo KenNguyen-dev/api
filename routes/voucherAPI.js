@@ -54,7 +54,7 @@ router.post("/list", (req, res, next) => {
 
 router.get("/cardlist", (req, res, next) => {
   db.connect(() => {
-    var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from voucher`;
+    var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from voucher where voucher.trang_thai="P" AND voucher.ngay_ket_thuc > current_date()`;
     db.query(queryString, (err, result) => {
       if (err) res.send(err);
       console.table(result);
@@ -84,7 +84,39 @@ router.put("/applied", (req, res, next) => {
   });
 });
 
+router.post("/publish", (req, res, next) => {
+  db.connect(() => {
+    var queryString = `UPDATE voucher SET trang_thai='P' where doi_tac_id='${req.body.doi_tac_id}' and id='${req.body.id}'`;
+    db.query(queryString, (err, result) => {
+      if (err) res.send(err);
+      console.log(result.affectedRows);
+      if (result.affectedRows != 0) {
+        res.status(200).send("Success");
+      } else {
+        res.status(401).send("Not Enough");
+      }
+    });
+  });
+});
+
+router.post("/unpublish", (req, res, next) => {
+  db.connect(() => {
+    var queryString = `UPDATE voucher SET trang_thai='UP' where doi_tac_id='${req.body.doi_tac_id}' and id='${req.body.id}'`;
+    db.query(queryString, (err, result) => {
+      if (err) res.send(err);
+      console.log(result.affectedRows);
+      if (result.affectedRows != 0) {
+        res.status(200).send("Success");
+      } else {
+        res.status(401).send("Not Enough");
+      }
+    });
+  });
+});
+
 router.post("/getvoucher", (req, res, next) => {
+  console.log(req.body.khach_hang_id);
+  console.log(req.body.voucher_id);
   db.connect(() => {
     var queryString = `CALL nhanVoucher('${req.body.khach_hang_id}','${req.body.voucher_id}')`;
     db.query(queryString, (err, result) => {
@@ -179,11 +211,16 @@ router.get("/details", (req, res, next) => {
 });
 
 router.delete("/delete", (req, res, next) => {
+  console.log(req.body.id);
+  console.log(req.body.doi_tac_id);
   db.connect(() => {
-    var queryString = `DELETE FROM voucher where id='${req.body.id}'`;
-    db.query(queryString, (err) => {
+    var queryString = `CALL xoaVoucher('${req.body.id}','${req.body.doi_tac_id}')`;
+    db.query(queryString, (err, result) => {
       if (err) res.send(err);
-      res.send("Delete success");
+      console.log(result.affectedRows);
+      if (result.affectedRows <= 0) {
+        res.status(401).send("Delete Fail");
+      } else res.send("Delete success");
     });
   });
 });

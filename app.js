@@ -23,7 +23,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 //#endregion
 
-app.use(cors());
+app.use(cors({ origin: "https://gift-partner-v1.herokuapp.com" }));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
