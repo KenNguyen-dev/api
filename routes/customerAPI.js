@@ -3,37 +3,31 @@ var router = express.Router();
 var db = require("../config/dbconfig");
 
 router.post("/add", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `INSERT INTO khach_hang VALUES ('${req.body.id}','${req.body.ten}','${req.body.diem_tich_luy}')`;
-    db.query(queryString, (err) => {
-      if (err) {
-        console.log(err);
-        res.send("Add failed. Please check your ID again");
-      } else {
-        res.send("Add Successfully");
-      }
-    });
+  var queryString = `INSERT INTO khach_hang VALUES ('${req.body.id}','${req.body.ten}','${req.body.diem_tich_luy}')`;
+  db.query(queryString, (err) => {
+    if (err) {
+      console.log(err);
+      res.send("Add failed. Please check your ID again");
+    } else {
+      res.send("Add Successfully");
+    }
   });
 });
 
 router.put("/update", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `UPDATE khach_hang SET ten='${req.body.ten}',diem_tich_luy='${req.body.diem_tich_luy}' where id='${req.body.id}'`;
-    db.query(queryString, (err) => {
-      if (err) res.send(err);
-      res.send("Update success");
-    });
+  var queryString = `UPDATE khach_hang SET ten='${req.body.ten}',diem_tich_luy='${req.body.diem_tich_luy}' where id='${req.body.id}'`;
+  db.query(queryString, (err) => {
+    if (err) res.send(err);
+    res.send("Update success");
   });
 });
 
 router.get("/voucher", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `SELECT voucher_id FROM khach_hang_voucher WHERE khach_hang_id='${req.body.khach_hang_id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.table(result);
-      res.send(result);
-    });
+  var queryString = `SELECT voucher_id FROM khach_hang_voucher WHERE khach_hang_id='${req.body.khach_hang_id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.table(result);
+    res.send(result);
   });
 });
 

@@ -1,6 +1,7 @@
 const sql = require("mysql");
 
 var config = {
+  connectionLimit: 10,
   host: "us-cdbr-east-03.cleardb.com",
   user: "bfaa9fc6657f84",
   password: "931583b3",
@@ -16,9 +17,9 @@ var config = {
 //   insecureAuth: true,
 // };
 
-const db = new sql.createConnection(config);
+const db = new sql.createPool(config);
 
-db.connect((error) => {
+db.getConnection((error) => {
   if (error) throw error;
   console.log("Successfully connected to the database.");
 });

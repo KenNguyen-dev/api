@@ -42,103 +42,87 @@ let upload = multer({ storage: memoryStorage() });
 // };
 
 router.post("/list", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `select * from voucher where doi_tac_id = '${req.body.id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) console.log(err);
-      console.table(result);
-      res.send(result);
-    });
+  var queryString = `select * from voucher where doi_tac_id = '${req.body.id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) console.log(err);
+    console.table(result);
+    res.send(result);
   });
 });
 
 router.get("/cardlist", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from voucher where voucher.trang_thai="P" AND voucher.ngay_ket_thuc > current_date()`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.table(result);
-      res.send(result);
-    });
+  var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from voucher where voucher.trang_thai="P" AND voucher.ngay_ket_thuc > current_date()`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.table(result);
+    res.send(result);
   });
 });
 
 router.get("/voucherdetail", (req, res, next) => {
   console.log(req.query.id);
-  db.connect(() => {
-    var queryString = `select hinh_anh,chu_thich_day_du,code_voucher,ten from voucher where id='${req.query.id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      res.send(result[0]);
-    });
+  var queryString = `select hinh_anh,chu_thich_day_du,code_voucher,ten from voucher where id='${req.query.id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    res.send(result[0]);
   });
 });
 
 router.put("/applied", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `UPDATE khach_hang_voucher SET da_dung='1' WHERE voucher_id='${req.body.voucher_id}' AND khach_hang_id='${req.body.khach_hang_id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) res.status(404).send(err);
-      res.status(200).send("Success");
-    });
+  var queryString = `UPDATE khach_hang_voucher SET da_dung='1' WHERE voucher_id='${req.body.voucher_id}' AND khach_hang_id='${req.body.khach_hang_id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) res.status(404).send(err);
+    res.status(200).send("Success");
   });
 });
 
 router.post("/publish", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `UPDATE voucher SET trang_thai='P' where doi_tac_id='${req.body.doi_tac_id}' and id='${req.body.id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.log(result.affectedRows);
-      if (result.affectedRows != 0) {
-        res.status(200).send("Success");
-      } else {
-        res.status(401).send("Not Enough");
-      }
-    });
+  var queryString = `UPDATE voucher SET trang_thai='P' where doi_tac_id='${req.body.doi_tac_id}' and id='${req.body.id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.log(result.affectedRows);
+    if (result.affectedRows != 0) {
+      res.status(200).send("Success");
+    } else {
+      res.status(401).send("Not Enough");
+    }
   });
 });
 
 router.post("/unpublish", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `UPDATE voucher SET trang_thai='UP' where doi_tac_id='${req.body.doi_tac_id}' and id='${req.body.id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.log(result.affectedRows);
-      if (result.affectedRows != 0) {
-        res.status(200).send("Success");
-      } else {
-        res.status(401).send("Not Enough");
-      }
-    });
+  var queryString = `UPDATE voucher SET trang_thai='UP' where doi_tac_id='${req.body.doi_tac_id}' and id='${req.body.id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.log(result.affectedRows);
+    if (result.affectedRows != 0) {
+      res.status(200).send("Success");
+    } else {
+      res.status(401).send("Not Enough");
+    }
   });
 });
 
 router.post("/getvoucher", (req, res, next) => {
   console.log(req.body.khach_hang_id);
   console.log(req.body.voucher_id);
-  db.connect(() => {
-    var queryString = `CALL nhanVoucher('${req.body.khach_hang_id}','${req.body.voucher_id}')`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.log(result);
-      if (result.affectedRows != 0) {
-        res.status(200).send("Success");
-      } else {
-        res.status(401).send("Not Enough");
-      }
-    });
+  var queryString = `CALL nhanVoucher('${req.body.khach_hang_id}','${req.body.voucher_id}')`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.log(result);
+    if (result.affectedRows != 0) {
+      res.status(200).send("Success");
+    } else {
+      res.status(401).send("Not Enough");
+    }
   });
 });
 
 router.get("/customer", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `select khach_hang_id from khach_hang_voucher where voucher_id='${req.query.voucher_id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.table(result);
-      res.status(200).send(result);
-    });
+  var queryString = `select khach_hang_id from khach_hang_voucher where voucher_id='${req.query.voucher_id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.table(result);
+    res.status(200).send(result);
   });
 });
 
@@ -184,15 +168,13 @@ router.post("/add", upload.single("hinh_anh"), (req, res, next) => {
                                 '${data.doi_tac_id}',
                                 '${data.diem_toi_thieu}',
                                 '${data.dich_vu_id}')`;
-    db.connect(() => {
-      db.query(queryString, (err) => {
-        if (err) {
-          console.log(err);
-          res.send("Add failed. Please check your ID again");
-        } else {
-          res.send("Success");
-        }
-      });
+    db.query(queryString, (err) => {
+      if (err) {
+        console.log(err);
+        res.send("Add failed. Please check your ID again");
+      } else {
+        res.send("Success");
+      }
     });
   } else {
     res.send("Failed");
@@ -200,28 +182,24 @@ router.post("/add", upload.single("hinh_anh"), (req, res, next) => {
 });
 
 router.get("/details", (req, res, next) => {
-  db.connect(() => {
-    var queryString = `select * from voucher where id='${req.query.id}'`;
-    db.query(queryString, (err, result) => {
-      if (err) console.log(err);
-      console.table(result);
-      res.send(result);
-    });
+  var queryString = `select * from voucher where id='${req.query.id}'`;
+  db.query(queryString, (err, result) => {
+    if (err) console.log(err);
+    console.table(result);
+    res.send(result);
   });
 });
 
 router.delete("/delete", (req, res, next) => {
   console.log(req.body.id);
   console.log(req.body.doi_tac_id);
-  db.connect(() => {
-    var queryString = `CALL xoaVoucher('${req.body.id}','${req.body.doi_tac_id}')`;
-    db.query(queryString, (err, result) => {
-      if (err) res.send(err);
-      console.log(result.affectedRows);
-      if (result.affectedRows <= 0) {
-        res.status(401).send("Delete Fail");
-      } else res.send("Delete success");
-    });
+  var queryString = `CALL xoaVoucher('${req.body.id}','${req.body.doi_tac_id}')`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.log(result.affectedRows);
+    if (result.affectedRows <= 0) {
+      res.status(401).send("Delete Fail");
+    } else res.send("Delete success");
   });
 });
 
