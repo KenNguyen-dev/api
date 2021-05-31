@@ -23,7 +23,7 @@ router.put("/update", (req, res, next) => {
 });
 
 router.get("/voucher", (req, res, next) => {
-  var queryString = `SELECT voucher_id FROM khach_hang_voucher WHERE khach_hang_id='${req.body.khach_hang_id}'`;
+  var queryString = `SELECT voucher_id,da_dung FROM khach_hang_voucher WHERE khach_hang_id='${req.body.khach_hang_id}' AND (SELECT trang_thai FROM voucher WHERE id=voucher_id)='P'`;
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     console.table(result);

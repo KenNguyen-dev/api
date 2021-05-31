@@ -61,7 +61,7 @@ router.get("/cardlist", (req, res, next) => {
 
 router.get("/voucherdetail", (req, res, next) => {
   console.log(req.query.id);
-  var queryString = `select hinh_anh,chu_thich_day_du,code_voucher,ten from voucher where id='${req.query.id}'`;
+  var queryString = `select hinh_anh,chu_thich_day_du,code_voucher,ten,gia_tri,diem_toi_thieu from voucher where id='${req.query.id}'`;
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     res.send(result[0]);
@@ -69,7 +69,7 @@ router.get("/voucherdetail", (req, res, next) => {
 });
 
 router.put("/applied", (req, res, next) => {
-  var queryString = `UPDATE khach_hang_voucher SET da_dung='1' WHERE voucher_id='${req.body.voucher_id}' AND khach_hang_id='${req.body.khach_hang_id}'`;
+  var queryString = `UPDATE khach_hang_voucher SET da_dung='1' WHERE voucher_id='${req.body.voucher_id}' AND khach_hang_id='${req.body.khach_hang_id}' AND (SELECT trang_thai FROM voucher WHERE id='${req.body.voucher_id}')='P'`;
   db.query(queryString, (err, result) => {
     if (err) res.status(404).send(err);
     res.status(200).send("Success");
@@ -83,8 +83,6 @@ router.post("/publish", (req, res, next) => {
     console.log(result.affectedRows);
     if (result.affectedRows != 0) {
       res.status(200).send("Success");
-    } else {
-      res.status(401).send("Not Enough");
     }
   });
 });
@@ -96,8 +94,6 @@ router.post("/unpublish", (req, res, next) => {
     console.log(result.affectedRows);
     if (result.affectedRows != 0) {
       res.status(200).send("Success");
-    } else {
-      res.status(401).send("Not Enough");
     }
   });
 });
@@ -118,7 +114,7 @@ router.post("/getvoucher", (req, res, next) => {
 });
 
 router.get("/customer", (req, res, next) => {
-  var queryString = `select khach_hang_id from khach_hang_voucher where voucher_id='${req.query.voucher_id}'`;
+  var queryString = `select khach_hang_id,da_dung from khach_hang_voucher where voucher_id='${req.query.voucher_id}'`;
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     console.table(result);
@@ -204,33 +200,25 @@ router.delete("/delete", (req, res, next) => {
 });
 
 router.put("/update", (req, res, next) => {
-  var queryString = `IF NOT EXISTS 
-                                (   SELECT  1
-                                    FROM    voucher 
-                                    WHERE   code_voucher =	'${req.body.code_voucher}'
-                                )
-                                BEGIN
-                                    UPDATE voucher SET
-                                        id='${req.body.doi_tac_id}-${req.body.code_voucher}',
-                                        ten='${req.body.ten}',
-                                        chu_thich_don_gian='${req.body.chu_thich_don_gian}',
-                                        chu_thich_day_du=${req.body.chu_thich_day_du},
-                                        ngay_bat_dau=${req.body.ngay_bat_dau},
-                                        ngay_ket_thuc=${req.body.ngay_ket_thuc},
-                                        code_voucher=${req.body.code_voucher},
-                                        gia_tri=${req.body.gia_tri},
-                                        loai_voucher_id=${req.body.loai_voucher_id},
-                                        so_luong=${req.body.so_luong},
-                                        trang_thai=${req.body.trang_thai},
-                                        hinh_anh=${req.body.hinh_anh},
-                                        diem_toi_thieu=${req.body.diem_toi_thieu}                                         
-                                    WHERE id='${req.body.id}'
-                                END`;
-  db.connect(() => {
-    db.query(queryString, (err) => {
-      if (err) res.send(err);
-      res.send("Update success");
-    });
+  var queryString = `UPDATE voucher SET
+                      id='${req.body.doi_tac_id}-${req.body.code_voucher}',
+                      ten='${req.body.ten}',
+                      chu_thich_don_gian='${req.body.chu_thich_don_gian}',
+                      chu_thich_day_du=${req.body.chu_thich_day_du},
+                      ngay_bat_dau=${req.body.ngay_bat_dau},
+                      ngay_ket_thuc=${req.body.ngay_ket_thuc},
+                      code_voucher=${req.body.code_voucher},
+                      gia_tri=${req.body.gia_tri},
+                      loai_voucher_id=${req.body.loai_voucher_id},
+                      so_luong=${req.body.so_luong},
+                      trang_thai=${req.body.trang_thai},
+                      hinh_anh=${req.body.hinh_anh},
+                      diem_toi_thieu=${req.body.diem_toi_thieu},
+                      dich_vu_id=${req.body.dich_vu_id}                                         
+                  WHERE id='${req.body.id}'`;
+  db.query(queryString, (err) => {
+    if (err) res.send(err);
+    res.send("Update success");
   });
 });
 
