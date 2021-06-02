@@ -10,3 +10,5 @@ router.get("/top5customer", (req, res, next) => {
     res.status(200).send(result);
   });
 });
+
+module.exports = router;
