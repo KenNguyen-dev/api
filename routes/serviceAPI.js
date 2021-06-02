@@ -7,7 +7,7 @@ router.get("/list", (req, res, next) => {
   db.query(queryString, (err, result) => {
     if (err) console.log(err);
     console.table(result);
-    res.send(result);
+    res.status(200).send(result);
   });
 });
 
@@ -18,7 +18,7 @@ router.post("/add", (req, res, next) => {
       console.log(err);
       res.send("Add failed. Please check your ID again");
     } else {
-      res.send("Add Successfully");
+      res.status(200).send("Add Successfully");
     }
   });
 });
@@ -27,7 +27,7 @@ router.delete("/delete", (req, res, next) => {
   var queryString = `DELETE FROM dich_vu where id='${req.body.id}'`;
   db.query(queryString, (err) => {
     if (err) console.log(err);
-    res.send("Delete success");
+    res.status(200).send("Delete success");
   });
 });
 
@@ -35,7 +35,7 @@ router.put("/update", (req, res, next) => {
   var queryString = `UPDATE dich_vu SET ten='${req.body.ten}' where id='${req.body.id}'`;
   db.query(queryString, (err) => {
     if (err) console.log(err);
-    res.send("Update success");
+    res.status(200).send("Update success");
   });
 });
 

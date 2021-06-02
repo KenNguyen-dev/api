@@ -2,6 +2,15 @@ var express = require("express");
 var router = express.Router();
 var db = require("../config/dbconfig");
 
+router.get("/list", (req, res, next) => {
+  var queryString = "select * from khach_hang";
+  db.query(queryString, (err, result) => {
+    if (err) res.status(400).send(err);
+    console.table(result);
+    res.status(200).send(result);
+  });
+});
+
 router.post("/add", (req, res, next) => {
   var queryString = `INSERT INTO khach_hang VALUES ('${req.body.id}','${req.body.ten}','${req.body.diem_tich_luy}')`;
   db.query(queryString, (err) => {
@@ -23,7 +32,7 @@ router.put("/update", (req, res, next) => {
 });
 
 router.get("/voucher", (req, res, next) => {
-  var queryString = `SELECT voucher_id,da_dung FROM khach_hang_voucher WHERE khach_hang_id='${req.body.khach_hang_id}' AND (SELECT trang_thai FROM voucher WHERE id=voucher_id)='P'`;
+  var queryString = `SELECT voucher_id,da_dung FROM khach_hang_voucher WHERE khach_hang_id='${req.query.khach_hang_id}' AND (SELECT trang_thai FROM voucher WHERE id=voucher_id)='P'`;
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     console.table(result);

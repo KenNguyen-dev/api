@@ -13,6 +13,7 @@ var partnerTypeAPI = require("./routes/partnerTypeAPI");
 var partnerAPI = require("./routes/partnerAPI");
 var voucherAPI = require("./routes/voucherAPI");
 var customerAPI = require("./routes/customerAPI");
+var adminAPI = require("./routes/adminAPI");
 
 var app = express();
 require("dotenv").config();
@@ -28,6 +29,7 @@ app.use(
     origin: [
       "https://gift-partner-v1.herokuapp.com",
       "https://gift-promotion-v1.herokuapp.com",
+      "http://localhost:3000",
     ],
   })
 );
@@ -49,6 +51,7 @@ app.use("/partnertype", partnerTypeAPI);
 app.use("/partner", partnerAPI);
 app.use("/voucher", voucherAPI);
 app.use("/customer", customerAPI);
+app.use("/admin", adminAPI);
 
 //#region Catch Error
 // catch 404 and forward to error handler
