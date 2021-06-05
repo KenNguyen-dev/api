@@ -182,7 +182,7 @@ router.get("/details", (req, res, next) => {
   db.query(queryString, (err, result) => {
     if (err) console.log(err);
     console.table(result);
-    res.send(result);
+    res.status(200).send(result[0]);
   });
 });
 
