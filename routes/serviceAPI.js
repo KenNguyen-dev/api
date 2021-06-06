@@ -25,9 +25,13 @@ router.post("/add", (req, res, next) => {
 
 router.delete("/delete", (req, res, next) => {
   var queryString = `DELETE FROM dich_vu where id='${req.body.id}'`;
-  db.query(queryString, (err) => {
+  db.query(queryString, (err, result) => {
     if (err) console.log(err);
-    res.status(200).send("Delete success");
+    if (result.affectedRows != 0) {
+      res.status(200).send("Delete success");
+    } else {
+      res.status(401).send("ID không tồn tại");
+    }
   });
 });
 
@@ -35,7 +39,11 @@ router.put("/update", (req, res, next) => {
   var queryString = `UPDATE dich_vu SET ten='${req.body.ten}' where id='${req.body.id}'`;
   db.query(queryString, (err) => {
     if (err) console.log(err);
-    res.status(200).send("Update success");
+    if (result.affectedRows != 0) {
+      res.status(200).send("Update success");
+    } else {
+      res.status(401).send("ID không tồn tại");
+    }
   });
 });
 

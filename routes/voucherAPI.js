@@ -72,7 +72,11 @@ router.put("/applied", (req, res, next) => {
   var queryString = `UPDATE khach_hang_voucher SET da_dung='1' WHERE voucher_id='${req.body.voucher_id}' AND khach_hang_id='${req.body.khach_hang_id}' AND (SELECT trang_thai FROM voucher WHERE id='${req.body.voucher_id}')='P'`;
   db.query(queryString, (err, result) => {
     if (err) res.status(404).send(err);
-    res.status(200).send("Success");
+    if (result.affectedRows != 0) {
+      res.status(200).send("Applied success");
+    } else {
+      res.status(401).send("ID không tồn tại");
+    }
   });
 });
 
@@ -108,7 +112,7 @@ router.post("/getvoucher", (req, res, next) => {
     if (result.affectedRows != 0) {
       res.status(200).send("Success");
     } else {
-      res.status(401).send("Not Enough");
+      res.status(401).send("Not Enough Point");
     }
   });
 });
@@ -200,25 +204,19 @@ router.delete("/delete", (req, res, next) => {
 });
 
 router.put("/update", (req, res, next) => {
-  var queryString = `UPDATE voucher SET
-                      id='${req.body.doi_tac_id}-${req.body.code_voucher}',
-                      ten='${req.body.ten}',
-                      chu_thich_don_gian='${req.body.chu_thich_don_gian}',
-                      chu_thich_day_du=${req.body.chu_thich_day_du},
-                      ngay_bat_dau=${req.body.ngay_bat_dau},
-                      ngay_ket_thuc=${req.body.ngay_ket_thuc},
-                      code_voucher=${req.body.code_voucher},
-                      gia_tri=${req.body.gia_tri},
-                      loai_voucher_id=${req.body.loai_voucher_id},
-                      so_luong=${req.body.so_luong},
-                      trang_thai=${req.body.trang_thai},
-                      hinh_anh=${req.body.hinh_anh},
-                      diem_toi_thieu=${req.body.diem_toi_thieu},
-                      dich_vu_id=${req.body.dich_vu_id}                                         
-                  WHERE id='${req.body.id}'`;
-  db.query(queryString, (err) => {
+  console.log(req.body);
+  var queryString = `CALL capNhatVoucher('${req.body.id}','${req.body.ten}',
+                                          '${req.body.chu_thich_don_gian}','${req.body.chu_thich_day_du}',
+                                          '${req.body.ngay_bat_dau}','${req.body.ngay_ket_thuc}','${req.body.gia_tri}',
+                                          '${req.body.loai_voucher_id}','${req.body.so_luong}','${req.body.diem_toi_thieu}','${req.body.dich_vu_id}')`;
+  db.query(queryString, (err, result) => {
     if (err) res.send(err);
-    res.send("Update success");
+    console.log(result.affectedRows);
+    if (result.affectedRows != 0) {
+      res.status(200).send("Update success");
+    } else {
+      res.status(401).send("ID không tồn tại");
+    }
   });
 });
 
