@@ -40,4 +40,13 @@ router.get("/voucher", (req, res, next) => {
   });
 });
 
+router.post("/SPvoucher", (req, res, next) => {
+  var queryString = `SELECT * FROM voucher where doi_tac_id='${req.body.doi_tac_id}' AND dich_vu_id ='${req.body.dich_vu_id}' AND (SELECT khach_hang_id from khach_hang_voucher where voucher_id=voucher.id)='${req.body.khach_hang_id}';`;
+  db.query(queryString, (err, result) => {
+    if (err) res.send(err);
+    console.table(result);
+    res.status(200).send(result);
+  });
+});
+
 module.exports = router;

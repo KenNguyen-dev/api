@@ -1,7 +1,7 @@
 const sql = require("mysql");
 
 var config = {
-  connectionLimit: 10,
+  connectionLimit: 20,
   host: "us-cdbr-east-03.cleardb.com",
   user: "bfaa9fc6657f84",
   password: "931583b3",
