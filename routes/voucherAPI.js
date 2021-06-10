@@ -51,7 +51,7 @@ router.post("/list", (req, res, next) => {
 });
 
 router.get("/cardlist", (req, res, next) => {
-  var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from voucher where voucher.trang_thai="P" AND voucher.ngay_ket_thuc > current_date()`;
+  var queryString = `select chu_thich_don_gian,ngay_ket_thuc,hinh_anh,id from voucher where voucher.trang_thai="P" AND voucher.ngay_ket_thuc > current_date() AND voucher.sl_con_lai>0`;
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     console.table(result);
@@ -109,10 +109,12 @@ router.post("/getvoucher", (req, res, next) => {
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     console.log(result);
-    if (result.affectedRows != 0) {
-      res.status(200).send("Success");
+    if (result == undefined) {
+      res.status(401).send();
+    } else if (result.affectedRows != 0) {
+      res.send("Nhận thành công");
     } else {
-      res.status(401).send("Not Enough Point");
+      res.send("Không đủ điểm");
     }
   });
 });
