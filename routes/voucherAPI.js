@@ -22,24 +22,24 @@ const DIR = "./public/images";
 
 let upload = multer({ storage: memoryStorage() });
 
-// var authenticateJWT = (req) => {
-//     var checkAuth = false;
-//     const authHeader = req.headers.authorization;
-//     console.log(authHeader)
-//     if (authHeader) {
-//         const token = authHeader.split(' ')[1];
-//         jwt.verify(token, process.env.SECRET.toString(), (err, user) => {
-//             if (err!=null) {
-//                 console.log(err)
-//                 // return res.sendStatus(403);
-//                 //return false;
-//             }else{
-//                checkAuth=true;
-//             }
-//         });
-//     }
-//     return checkAuth
-// };
+var authenticateJWT = (req) => {
+  var checkAuth = false;
+  const authHeader = req.headers.authorization;
+  console.log(authHeader);
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    jwt.verify(token, process.env.SECRET.toString(), (err, user) => {
+      if (err != null) {
+        console.log(err);
+        // return res.sendStatus(403);
+        //return false;
+      } else {
+        checkAuth = true;
+      }
+    });
+  }
+  return checkAuth;
+};
 
 router.post("/list", (req, res, next) => {
   var queryString = `select * from voucher where doi_tac_id = '${req.body.id}'`;
