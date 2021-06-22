@@ -56,6 +56,17 @@ router.post("/register", (req, res, next) => {
   });
 });
 
+router.get("/detail", (req, res, next) => {
+  var query = `Select * from khach_hang where id='${req.query.id}'`;
+  db.query(query, function (err, result) {
+    if (err) {
+      res.send(err);
+    } else {
+      res.status(200).send(result[0]);
+    }
+  });
+});
+
 router.post("/login", (req, res, next) => {
   console.log(req.body.email);
   console.log(req.body.mat_khau);
@@ -104,7 +115,7 @@ router.put("/updatepoint", (req, res, next) => {
 });
 
 router.get("/voucher", (req, res, next) => {
-  var queryString = `SELECT voucher_id,da_dung FROM khach_hang_voucher WHERE khach_hang_id='${req.query.khach_hang_id}' AND (SELECT trang_thai FROM voucher WHERE id=voucher_id)='P'`;
+  var queryString = `SELECT voucher.ten,voucher.ngay_ket_thuc,voucher.code_voucher,voucher.gia_tri,voucher.dich_vu_id,khach_hang_voucher.da_dung from voucher INNER JOIN khach_hang_voucher ON voucher.id=voucher_id where khach_hang_id='${req.query.id}' AND (SELECT trang_thai FROM voucher WHERE id=voucher_id)='P'`;
   db.query(queryString, (err, result) => {
     if (err) res.send(err);
     console.table(result);

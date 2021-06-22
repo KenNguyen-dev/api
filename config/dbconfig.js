@@ -7,6 +7,13 @@ var config = {
   password: "931583b3",
   database: "heroku_72fcec997c0e882",
   insecureAuth: true,
+  typeCast: function castField(field, useDefaultTypeCasting) {
+    if (field.type === "BIT" && field.length === 1) {
+      var bytes = field.buffer();
+      return bytes[0] === 1;
+    }
+    return useDefaultTypeCasting();
+  },
 };
 
 // var config = {
