@@ -19,20 +19,19 @@ var app = express();
 require("dotenv").config();
 
 //#region View Engine
+
+const corsOpts = {
+  origin: "*",
+
+  methods: ["GET", "POST", "PUT"],
+};
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 //#endregion
 
-app.use(
-  cors({
-    origin: [
-      "https://gift-partner-v1.herokuapp.com",
-      "https://gift-promotion-v1.herokuapp.com",
-      "http://localhost:3000",
-    ],
-  })
-);
+app.use(cors(corsOpts));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
