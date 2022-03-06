@@ -4,9 +4,11 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
+require("dotenv").config();
 const bodyParser = require("body-parser");
 
 var indexRouter = require("./routes/index");
+var usersRouter = require("./routes/usersAPI");
 var voucherTypeAPI = require("./routes/voucherTypeAPI");
 var serviceAPI = require("./routes/serviceAPI");
 var partnerTypeAPI = require("./routes/partnerTypeAPI");
@@ -16,7 +18,7 @@ var customerAPI = require("./routes/customerAPI");
 var adminAPI = require("./routes/adminAPI");
 
 var app = express();
-require("dotenv").config();
+
 
 //#region View Engine
 
@@ -44,6 +46,7 @@ app.use(bodyParser.json());
 // });
 
 app.use("/", indexRouter);
+app.use("/users", usersRouter);
 app.use("/service", serviceAPI);
 app.use("/vouchertype", voucherTypeAPI);
 app.use("/partnertype", partnerTypeAPI);
@@ -51,6 +54,7 @@ app.use("/partner", partnerAPI);
 app.use("/voucher", voucherAPI);
 app.use("/customer", customerAPI);
 app.use("/admin", adminAPI);
+
 
 //#region Catch Error
 // catch 404 and forward to error handler

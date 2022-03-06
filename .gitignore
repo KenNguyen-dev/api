@@ -71,3 +71,6 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+#Service Account Key
+config/serviceAccount.json

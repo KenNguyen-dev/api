@@ -3,7 +3,7 @@ const serviceAccount = require("./serviceAccount.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "vouchermanager-9cf2e.appspot.com",
+  storageBucket: "nftmarketdb.appspot.com",
 });
 
 const bucket = admin.storage().bucket();
