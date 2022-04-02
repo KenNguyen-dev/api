@@ -9,6 +9,9 @@ const bodyParser = require("body-parser");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/usersAPI");
+var nftRoute = require("./routes/nftAPI");
+var collectionsRoute = require("./routes/collectionsAPI");
+var categoriesRoute = require("./routes/categoriesAPI");
 var voucherTypeAPI = require("./routes/voucherTypeAPI");
 var serviceAPI = require("./routes/serviceAPI");
 var partnerTypeAPI = require("./routes/partnerTypeAPI");
@@ -18,7 +21,6 @@ var customerAPI = require("./routes/customerAPI");
 var adminAPI = require("./routes/adminAPI");
 
 var app = express();
-
 
 //#region View Engine
 
@@ -47,6 +49,9 @@ app.use(bodyParser.json());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/nfts", nftRoute);
+app.use("/collections", collectionsRoute);
+app.use("/categories", categoriesRoute);
 app.use("/service", serviceAPI);
 app.use("/vouchertype", voucherTypeAPI);
 app.use("/partnertype", partnerTypeAPI);
@@ -54,7 +59,6 @@ app.use("/partner", partnerAPI);
 app.use("/voucher", voucherAPI);
 app.use("/customer", customerAPI);
 app.use("/admin", adminAPI);
-
 
 //#region Catch Error
 // catch 404 and forward to error handler
