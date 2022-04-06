@@ -59,59 +59,18 @@ router.post("/login", async (req, res, next) => {
     });
 });
 
-router.put("/updateusername", (req, res, next) => {
+router.put("/update", (req, res, next) => {
+  const id = req.body.id;
+  const userName = req.body.username;
+  const email = req.body.email;
+  const bio = req.body.bio;
+
   let promise = new Promise((resolve, reject) => {
     db.collection("users").updateOne(
-      { _id: req.body.id },
-      { $set: { userName: req.body.userName } },
+      { _id: id },
+      { $set: { userName: userName,email: email ,bio: bio}},
       (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(result);
-      }
-    );
-  });
-
-  promise
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(400).send("Error: " + err);
-    });
-});
-
-router.put("/updatebio", (req, res, next) => {
-  let promise = new Promise((resolve, reject) => {
-    db.collection("users").updateOne(
-      { _id: req.body.id },
-      { $set: { bio: req.body.bio } },
-      (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-        resolve(result);
-      }
-    );
-  });
-
-  promise
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(400).send("Error: " + err);
-    });
-});
-
-router.put("/updatemail", (req, res, next) => {
-  let promise = new Promise((resolve, reject) => {
-    db.collection("users").updateOne(
-      { _id: req.body.id },
-      { $set: { email: req.body.email } },
-      (err, result) => {
-        if (err) {
+        if (err || result.modifiedCount === 0) {
           return reject(err);
         }
         resolve(result);
