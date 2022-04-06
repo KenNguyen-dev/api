@@ -5,13 +5,15 @@ var multer = require("multer");
 const { memoryStorage } = require("multer");
 path = require("path");
 const firebase = require("../config/firebase");
+const { ObjectId } = require("mongodb");
 
 let upload = multer({ storage: memoryStorage() });
 
-router.post("/login", (req, res, next) => {
-  const id = req.body.id;
+router.post("/login", async (req, res, next) => {
+  const address = req.body.id;
   const newUser = {
-    _id: id,
+    id: ObjectId(),
+    address: address,
     userName: "Default",
     email: "",
     profilePicUrl: "",
@@ -21,9 +23,9 @@ router.post("/login", (req, res, next) => {
     nftCreated: [],
     favoriteNfts: [],
   };
-  
+  console.log(newUser)
   let promise = new Promise((resolve, reject) => {
-    db.collection("users").findOne({ _id: id }, (err, result) => {
+    db.collection("users").findOne({ address }, (err, result) => {
       if (err || result === null) {
         return reject(err);
       }
@@ -36,7 +38,7 @@ router.post("/login", (req, res, next) => {
       res.status(200).send(result);
     })
     .catch((err) => {
-      if(err) {
+      if (err) {
         res.status(400).send("Error: " + err);
       }
 
@@ -49,9 +51,9 @@ router.post("/login", (req, res, next) => {
         });
       });
 
-      promise.then(()=>{
+      promise.then(() => {
         res.status(201).send('New user created');
-      }).catch((err)=>{
+      }).catch((err) => {
         res.status(400).send("Error: " + err);
       });
     });
@@ -245,5 +247,39 @@ router.put(
     }
   }
 );
+
+router.get("/detail/:id", async (req, res) => {
+  try {
+    console.log(req.params.id)
+    const user = await db.collection("users").findOne({ _id: ObjectId(req.params.id) })
+    res.json(user)
+  } catch (e) {
+    console.log(e)
+    res.status(400).json(e)
+  }
+})
+
+router.put("/update/:id", (req, res) => {
+  let promise = new Promise((resolve, reject) => {
+    db.collection("users").updateOne(
+      { _id: req.body.id },
+      { $set: req.body },
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(result);
+      }
+    );
+  });
+
+  promise
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(400).send("Error: " + err);
+    });
+});
 
 module.exports = router;

@@ -19,6 +19,7 @@ var partnerAPI = require("./routes/partnerAPI");
 var voucherAPI = require("./routes/voucherAPI");
 var customerAPI = require("./routes/customerAPI");
 var adminAPI = require("./routes/adminAPI");
+var uploadAPI = require("./routes/uploadAPI")
 
 var app = express();
 
@@ -59,6 +60,7 @@ app.use("/partner", partnerAPI);
 app.use("/voucher", voucherAPI);
 app.use("/customer", customerAPI);
 app.use("/admin", adminAPI);
+app.use("/upload", uploadAPI)
 
 //#region Catch Error
 // catch 404 and forward to error handler
