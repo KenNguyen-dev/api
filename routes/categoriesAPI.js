@@ -6,6 +6,7 @@ const { memoryStorage } = require("multer");
 path = require("path");
 const firebase = require("../config/firebase");
 const { ObjectId } = require("mongodb");
+const Category = require("../schema/CategorySchema");
 
 let upload = multer({ storage: memoryStorage() });
 
@@ -13,12 +14,15 @@ let upload = multer({ storage: memoryStorage() });
 router.post("/add", (req, res, next) => {
   const { name } = req.body;
   let promise = new Promise((resolve, reject) => {
-    db.collection("categories").insertOne({ name: name }, (err, result) => {
+    const category = new Category({
+      name: name,
+    });
+    category.save((err, result) => {
       if (err) {
-        return reject(err);
+        reject(err);
+      } else {
+        resolve(result);
       }
-
-      resolve(result);
     });
   });
 
@@ -31,18 +35,15 @@ router.post("/add", (req, res, next) => {
     });
 });
 
-// get all collections by owner
 router.get("/list", (req, res, next) => {
   let promise = new Promise((resolve, reject) => {
-    db.collection("categories")
-      .find({})
-      .toArray((err, result) => {
-        if (err) {
-          return reject(err);
-        }
-
+    Category.find({}, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
         resolve(result);
-      });
+      }
+    });
   });
 
   promise
@@ -58,16 +59,13 @@ router.get("/list", (req, res, next) => {
 router.delete("/delete", (req, res, next) => {
   const { id } = req.query;
   let promise = new Promise((resolve, reject) => {
-    db.collection("collections").deleteOne(
-      { _id: ObjectId(id) },
-      (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-
+    Category.findByIdAndDelete(id, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
         resolve(result);
       }
-    );
+    });
   });
 
   promise
@@ -83,21 +81,13 @@ router.delete("/delete", (req, res, next) => {
 router.put("/edit", (req, res, next) => {
   const { id } = req.query;
   let promise = new Promise((resolve, reject) => {
-    db.collection("categories").updateOne(
-      { _id: ObjectId(id) },
-      { $set: { name: req.body.name } },
-      (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-
-        if (result.modifiedCount === 0) {
-          return reject("No document found");
-        }
-
+    Category.findByIdAndUpdate(id, { name: req.body.name }, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
         resolve(result);
       }
-    );
+    });
   });
 
   promise

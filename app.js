@@ -12,14 +12,12 @@ var usersRouter = require("./routes/usersAPI");
 var nftRoute = require("./routes/nftAPI");
 var collectionsRoute = require("./routes/collectionsAPI");
 var categoriesRoute = require("./routes/categoriesAPI");
-var voucherTypeAPI = require("./routes/voucherTypeAPI");
 var serviceAPI = require("./routes/serviceAPI");
 var partnerTypeAPI = require("./routes/partnerTypeAPI");
 var partnerAPI = require("./routes/partnerAPI");
 var voucherAPI = require("./routes/voucherAPI");
 var customerAPI = require("./routes/customerAPI");
-var adminAPI = require("./routes/adminAPI");
-var uploadAPI = require("./routes/uploadAPI")
+var uploadAPI = require("./routes/uploadAPI");
 
 var app = express();
 
@@ -54,13 +52,11 @@ app.use("/nfts", nftRoute);
 app.use("/collections", collectionsRoute);
 app.use("/categories", categoriesRoute);
 app.use("/service", serviceAPI);
-app.use("/vouchertype", voucherTypeAPI);
 app.use("/partnertype", partnerTypeAPI);
 app.use("/partner", partnerAPI);
 app.use("/voucher", voucherAPI);
 app.use("/customer", customerAPI);
-app.use("/admin", adminAPI);
-app.use("/upload", uploadAPI)
+app.use("/upload", uploadAPI);
 
 //#region Catch Error
 // catch 404 and forward to error handler

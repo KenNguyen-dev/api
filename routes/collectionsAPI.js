@@ -6,6 +6,8 @@ const { memoryStorage } = require("multer");
 path = require("path");
 const firebase = require("../config/firebase");
 const { ObjectId } = require("mongodb");
+const Collection = require("../schema/CollectionSchema");
+const Category = require("../schema/CategorySchema");
 
 let upload = multer({ storage: memoryStorage() });
 
@@ -19,49 +21,26 @@ const collection = {
 };
 
 //create new collection
-router.post("/create", (req, res, next) => {
-  const { name, description, owner, category } = req.body;
-  const newCollection = {
-    name,
-    description,
-    owner,
-    category,
-  };
-  let promise = new Promise((resolve, reject) => {
-    db.collection("collections").insertOne(
-      { ...newCollection, nftList: [] },
-      (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      }
-    );
-  });
+router.post("/create", async (req, res, next) => {
+  const { name, description, owner, categoryName } = req.body;
+  const category = await Category.findOne({ name: categoryName });
 
-  promise
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(400).send(err);
+  console.log(category._id);
+
+  let promise = new Promise((resolve, reject) => {
+    const collection = new Collection({
+      name: name,
+      description: description,
+      owner: owner,
     });
-});
-
-// get all collections by owner
-router.get("/getallcollections", (req, res, next) => {
-  const { owner } = req.query;
-  let promise = new Promise((resolve, reject) => {
-    db.collection("collections")
-      .find({ owner: owner })
-      .toArray((err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
-      });
+    collection.category = category._id;
+    collection.save((err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
   });
 
   promise
@@ -77,7 +56,7 @@ router.get("/getallcollections", (req, res, next) => {
 router.delete("/delete", (req, res, next) => {
   const { id } = req.query;
   let promise = new Promise((resolve, reject) => {
-    db.collection("collections").deleteOne({ _id: id }, (err, result) => {
+    Collection.findByIdAndDelete(id, (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -99,23 +78,32 @@ router.delete("/delete", (req, res, next) => {
 router.get("/getcollection", (req, res, next) => {
   const { id } = req.query;
   let promise = new Promise((resolve, reject) => {
-    db.collection("collections")
-      .aggregate([
-        {
-          $match: {
-            _id: new ObjectId(id),
-          },
-        },
-        {
-          $lookup: {
-            from: "nfts",
-            localField: "nftList",
-            foreignField: "_id",
-            as: "nftList",
-          },
-        },
-      ])
-      .toArray((err, result) => {
+    // db.collection("collections")
+    //   .aggregate([
+    //     {
+    //       $match: {
+    //         _id: new ObjectId(id),
+    //       },
+    //     },
+    //     {
+    //       $lookup: {
+    //         from: "nfts",
+    //         localField: "nftList",
+    //         foreignField: "_id",
+    //         as: "nftList",
+    //       },
+    //     },
+    //   ])
+    //   .toArray((err, result) => {
+    //     if (err) {
+    //       reject(err);
+    //     } else {
+    //       resolve(result);
+    //     }
+    //   });
+    Collection.findById(id)
+      .populate("assets")
+      .exec((err, result) => {
         if (err) {
           reject(err);
         } else {
@@ -134,26 +122,26 @@ router.get("/getcollection", (req, res, next) => {
 });
 
 // add NFT to collection
-router.post("/addnft", (req, res, next) => {
-  const { id, nftId } = req.body;
-  console.log(`id: ${id}`);
-  console.log(`nftId: ${nftId}`);
+router.post("/addasset", (req, res, next) => {
+  const { collectionId } = req.query;
+  const { uriID } = req.body;
+  console.log(`id: ${collectionId}`);
+  console.log(`uriID: ${uriID}`);
   let promise = new Promise((resolve, reject) => {
-    db.collection("collections").updateOne(
-      { _id: ObjectId(id) },
-      { $push: { nftList: nftId } },
-      (err, result) => {
-        if (err) {
-          return reject(err);
-        }
-
-        if (result.modifiedCount === 0) {
-          return reject("Collection not found");
-        }
-
-        resolve(result);
+    Collection.findById(collectionId, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        result.assets.push(uriID);
+        result.save((err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
       }
-    );
+    });
   });
 
   promise
@@ -166,21 +154,24 @@ router.post("/addnft", (req, res, next) => {
 });
 
 //remove NFT from collection
-router.delete("/removenft", (req, res, next) => {
+router.delete("/removeasset", (req, res, next) => {
   const { id } = req.query;
-  const { nftId } = req.body;
+  const { uriID } = req.body;
   let promise = new Promise((resolve, reject) => {
-    db.collection("collections").updateOne(
-      { _id: ObjectId(id) },
-      { $pull: { nftList: nftId } },
-      (err, result) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(result);
-        }
+    Collection.findById(id, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        result.assets.pull(uriID);
+        result.save((err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
       }
-    );
+    });
   });
 
   promise
