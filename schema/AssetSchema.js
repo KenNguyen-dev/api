@@ -6,6 +6,7 @@ const assetSchema = new Schema({
   uriID: {
     type: String,
     required: true,
+    immutable: true,
   },
   name: String,
   favoriteCount: {

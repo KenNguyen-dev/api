@@ -8,16 +8,18 @@ const collectionSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Category",
   },
-  //   owner: {
-  //     type: Schema.Types.ObjectId,
-  //     ref: "User",
-  //   },
-  //   assets: [
-  //     {
-  //       type: Schema.Types.ObjectId,
-  //       ref: "Asset",
-  //     },
-  //   ],
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  assets: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Asset",
+      default: null,
+    },
+  ],
   profileImage: String,
   bannerImage: String,
   description: String,

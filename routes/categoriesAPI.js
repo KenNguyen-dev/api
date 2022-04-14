@@ -99,4 +99,25 @@ router.put("/edit", (req, res, next) => {
     });
 });
 
+router.get("/get", (req, res, next) => {
+  const { id } = req.query;
+  let promise = new Promise((resolve, reject) => {
+    Category.findById(id, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+
+  promise
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+});
+
 module.exports = router;

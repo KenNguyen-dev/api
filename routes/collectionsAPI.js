@@ -8,32 +8,37 @@ const firebase = require("../config/firebase");
 const { ObjectId } = require("mongodb");
 const Collection = require("../schema/CollectionSchema");
 const Category = require("../schema/CategorySchema");
+const User = require("../schema/UserSchema");
+const Asset = require("../schema/AssetSchema");
 
 let upload = multer({ storage: memoryStorage() });
 
-const collection = {
-  _id: "",
-  name: "",
-  description: "",
-  nfts: [],
-  owner: "",
-  category: "",
-};
-
 //create new collection
 router.post("/create", async (req, res, next) => {
-  const { name, description, owner, categoryName } = req.body;
-  const category = await Category.findOne({ name: categoryName });
+  const { name, description, userID, categoryID } = req.body;
 
-  console.log(category._id);
+  const user = await User.findById(userID).exec();
+  const category = await Category.findById(categoryID).exec();
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  if (!category) {
+    return res.status(404).json({
+      message: "Category not found",
+    });
+  }
 
   let promise = new Promise((resolve, reject) => {
     const collection = new Collection({
       name: name,
       description: description,
-      owner: owner,
+      owner: user._id,
+      category: category._id,
     });
-    collection.category = category._id;
     collection.save((err, result) => {
       if (err) {
         reject(err);
@@ -122,17 +127,26 @@ router.get("/getcollection", (req, res, next) => {
 });
 
 // add NFT to collection
-router.post("/addasset", (req, res, next) => {
+router.post("/addasset", async (req, res, next) => {
   const { collectionId } = req.query;
-  const { uriID } = req.body;
+  const { assetID } = req.body;
   console.log(`id: ${collectionId}`);
-  console.log(`uriID: ${uriID}`);
+  console.log(`assetID: ${assetID}`);
+
+  const asset = await Asset.findById(assetID).exec();
+
+  if (!asset) {
+    return res.status(404).json({
+      message: "Asset not found",
+    });
+  }
+
   let promise = new Promise((resolve, reject) => {
     Collection.findById(collectionId, (err, result) => {
       if (err) {
         reject(err);
       } else {
-        result.assets.push(uriID);
+        result.assets.push(assetID);
         result.save((err, result) => {
           if (err) {
             reject(err);
@@ -154,15 +168,24 @@ router.post("/addasset", (req, res, next) => {
 });
 
 //remove NFT from collection
-router.delete("/removeasset", (req, res, next) => {
+router.delete("/removeasset", async (req, res, next) => {
   const { id } = req.query;
-  const { uriID } = req.body;
+  const { assetID } = req.body;
+
+  const asset = await Asset.findById(assetID).exec();
+
+  if (!asset) {
+    return res.status(404).json({
+      message: "Asset not found",
+    });
+  }
+
   let promise = new Promise((resolve, reject) => {
     Collection.findById(id, (err, result) => {
       if (err) {
         reject(err);
       } else {
-        result.assets.pull(uriID);
+        result.assets.pull(assetID);
         result.save((err, result) => {
           if (err) {
             reject(err);
@@ -172,6 +195,41 @@ router.delete("/removeasset", (req, res, next) => {
         });
       }
     });
+  });
+
+  promise
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+});
+
+router.put("/changecategory", async (req, res, next) => {
+  const { id } = req.query;
+  const { categoryID } = req.body;
+
+  const category = await Category.findById(categoryID).exec();
+
+  if (!category) {
+    return res.status(404).json({
+      message: "Category not found",
+    });
+  }
+
+  let promise = new Promise((resolve, reject) => {
+    Collection.findByIdAndUpdate(
+      id,
+      { category: category._id },
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
   });
 
   promise

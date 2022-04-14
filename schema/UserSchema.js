@@ -20,6 +20,7 @@ const userSchema = new Schema({
   walletAddress: {
     type: String,
     required: true,
+    immutable: true,
   },
   favoriteAssets: [
     {
