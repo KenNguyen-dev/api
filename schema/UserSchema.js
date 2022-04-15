@@ -15,12 +15,19 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
-  profileImg: String,
-  bannerImg: String,
+  profileImg: {
+    type: String,
+    default: "",
+  },
+  bannerImg: {
+    type: String,
+    default: "",
+  },
   walletAddress: {
     type: String,
     required: true,
     immutable: true,
+    unique: true,
   },
   favoriteAssets: [
     {

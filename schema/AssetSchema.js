@@ -8,19 +8,25 @@ const assetSchema = new Schema({
     required: true,
     immutable: true,
   },
-  name: String,
+  name: {
+    type: String,
+    required: true,
+  },
   favoriteCount: {
     type: Number,
     default: 0,
     min: 0,
   },
-  description: String,
+  description: {
+    type: String,
+    default: "",
+  },
   currentOwner: {
     type: Schema.Types.ObjectId,
     ref: "User",
   },
   currentCollection: {
-    type: Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId || null,
     ref: "Collection",
   },
   currentPrice: {
@@ -35,6 +41,10 @@ const assetSchema = new Schema({
       ref: "Event",
     },
   ],
+  status: {
+    type: String,
+    default: "Not Listing",
+  },
 });
 
 module.exports = mongoose.model("Asset", assetSchema);
