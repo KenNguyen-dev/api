@@ -13,13 +13,20 @@ let upload = multer({ storage: memoryStorage() });
 
 router.post("/login", async (req, res, next) => {
   const { walletAddress } = req.body;
+  console.log(walletAddress);
 
   if (!walletAddress) {
-    return res.status(400).send("No wallet address provided");
+    return res.status(400).json({
+      message: "Please provide wallet address",
+    });
   }
 
   try {
-    const user = await User.findOne({ walletAddress: walletAddress }).exec();
+    const user = await User.findOne({ walletAddress: walletAddress })
+      .populate("ownedAssets")
+      .populate("ownedCollections")
+      .populate("favoriteAssets")
+      .exec();
     if (!user) {
       const newUser = new User({
         walletAddress: walletAddress,
@@ -33,14 +40,154 @@ router.post("/login", async (req, res, next) => {
       await collection.save();
       newUser.ownedCollections = [collection._id];
       await newUser.save();
-      return res.status(201).json({
-        message: "New user created",
-        user: newUser,
-      });
+      return res.status(201).send(newUser);
     }
     return res.status(200).send(user);
   } catch {
-    res.status(400).send("Error logging in");
+    res.status(400).json({
+      message: "Error logging in",
+    });
+  }
+});
+
+router.get("/get-user", async (req, res, next) => {
+  const { walletAddress } = req.query;
+
+  if (!walletAddress) {
+    return res.status(400).json({
+      message: "Please provide wallet address",
+    });
+  }
+
+  try {
+    const user = await User.findOne({ walletAddress: walletAddress })
+      .populate("ownedAssets")
+      .populate("ownedCollections")
+      .populate("favoriteAssets")
+      .exec();
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return res.status(200).send(user);
+  } catch {
+    res.status(400).json({
+      message: "Error getting user",
+    });
+  }
+});
+
+router.get("/owned-assets", async (req, res, next) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Please provide id",
+    });
+  }
+
+  try {
+    const assets = await User.findOne({ _id: id }, "ownedAssets")
+      .populate([
+        {
+          path: "ownedAssets",
+          populate: {
+            path: "currentCollection",
+            model: "Collection",
+            select: "name",
+          },
+        },
+        {
+          path: "ownedAssets",
+          populate: {
+            path: "currentOwner",
+            model: "User",
+            select: ["name", "bio"],
+          },
+        },
+        {
+          path: "ownedAssets",
+          populate: {
+            path: "history",
+            model: "Event",
+            populate: [
+              {
+                path: "from",
+                model: "User",
+                select: "walletAddress",
+              },
+              {
+                path: "to",
+                model: "User",
+                select: "walletAddress",
+              },
+            ],
+          },
+        },
+      ])
+      .exec();
+    return res.status(200).send(assets);
+  } catch {
+    res.status(400).json({
+      message: "Error retrieving owned assets",
+    });
+  }
+});
+
+router.get("/favorite-assets", async (req, res, next) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Please provide id",
+    });
+  }
+
+  try {
+    const assets = await User.findOne({ _id: id }, "favoriteAssets")
+      .populate("favoriteAssets")
+      .exec();
+    return res.status(200).send(assets);
+  } catch {
+    res.status(400).json({
+      message: "Error retrieving favorite assets",
+    });
+  }
+});
+
+router.get("/owned-collections", async (req, res, next) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Please provide id",
+    });
+  }
+
+  try {
+    const collections = await User.findOne({ _id: id }, "ownedCollections")
+      .populate([
+        {
+          path: "ownedCollections",
+          populate: {
+            path: "owner",
+            model: "User",
+            select: "name",
+          },
+        },
+        {
+          path: "ownedCollections",
+          populate: {
+            path: "assets",
+            model: "Asset",
+          },
+        },
+      ])
+      .exec();
+    return res.status(200).send(collections);
+  } catch {
+    res.status(400).json({
+      message: "Error retrieving owned collections",
+    });
   }
 });
 
@@ -70,10 +217,12 @@ router.put("/update", (req, res, next) => {
 
   promise
     .then((result) => {
-      res.status(200).send(result);
+      res.sendStatus(200);
     })
     .catch((err) => {
-      res.status(400).send("Error: " + err);
+      res.status(400).json({
+        message: "Error updating user",
+      });
     });
 });
 

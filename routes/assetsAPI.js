@@ -121,13 +121,42 @@ router.post("/mint", async (req, res, next) => {
 // });
 //#endregion
 
-router.get("/get", async (req, res, next) => {
+router.get("/get-asset", async (req, res, next) => {
   const { id } = req.query;
+  console.log(id);
   try {
+    // const asset = await Asset.findById(id)
+    //   .populate('history')
+    //   .populate('currentCollection', 'name')
+    //   .populate('currentOwner', ['name', 'bio'])
+    //   .exec();
     const asset = await Asset.findById(id)
-      .populate("history")
-      .populate("currentCollection")
-      .populate("currentOwner")
+      .populate([
+        {
+          path: "history",
+          populate: {
+            path: "from",
+            model: "User",
+            select: "walletAddress",
+          },
+        },
+        {
+          path: "history",
+          populate: {
+            path: "to",
+            model: "User",
+            select: "walletAddress",
+          },
+        },
+        {
+          path: "currentCollection",
+          select: "name",
+        },
+        {
+          path: "currentOwner",
+          select: ["name", "bio"],
+        },
+      ])
       .exec();
     res.status(200).send(asset);
   } catch {
@@ -135,7 +164,7 @@ router.get("/get", async (req, res, next) => {
   }
 });
 
-router.put("updatestatus", async (req, res, next) => {
+router.put("update-status", async (req, res, next) => {
   const { id } = req.query;
   const { status } = req.body;
 
@@ -228,7 +257,7 @@ router.post("/sold", async (req, res, next) => {
 });
 
 //update price
-router.put("/updateprice", (req, res, next) => {
+router.put("/update-price", (req, res, next) => {
   const { id, price } = req.body;
   let promise = new Promise((resolve, reject) => {
     const assets = Asset.findById(id).exec();
@@ -252,7 +281,7 @@ router.put("/updateprice", (req, res, next) => {
     });
 });
 
-router.put("changecollection", async (req, res, next) => {
+router.put("change-collection", async (req, res, next) => {
   const { id, collectionID } = req.body;
   try {
     const asset = await Asset.findById(id).exec();

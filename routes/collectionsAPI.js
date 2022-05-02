@@ -80,34 +80,12 @@ router.delete("/delete", (req, res, next) => {
 });
 
 //get collection by id
-router.get("/getcollection", (req, res, next) => {
+router.get("/get-collection", (req, res, next) => {
   const { id } = req.query;
   let promise = new Promise((resolve, reject) => {
-    // db.collection("collections")
-    //   .aggregate([
-    //     {
-    //       $match: {
-    //         _id: new ObjectId(id),
-    //       },
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: "nfts",
-    //         localField: "nftList",
-    //         foreignField: "_id",
-    //         as: "nftList",
-    //       },
-    //     },
-    //   ])
-    //   .toArray((err, result) => {
-    //     if (err) {
-    //       reject(err);
-    //     } else {
-    //       resolve(result);
-    //     }
-    //   });
     Collection.findById(id)
       .populate("assets")
+      .populate("owner", "name")
       .exec((err, result) => {
         if (err) {
           reject(err);
@@ -127,7 +105,7 @@ router.get("/getcollection", (req, res, next) => {
 });
 
 // add NFT to collection
-router.post("/addasset", async (req, res, next) => {
+router.post("/add-asset", async (req, res, next) => {
   const { collectionId } = req.query;
   const { assetID } = req.body;
   console.log(`id: ${collectionId}`);
@@ -168,7 +146,7 @@ router.post("/addasset", async (req, res, next) => {
 });
 
 //remove NFT from collection
-router.delete("/removeasset", async (req, res, next) => {
+router.delete("/remove-asset", async (req, res, next) => {
   const { id } = req.query;
   const { assetID } = req.body;
 
@@ -206,7 +184,7 @@ router.delete("/removeasset", async (req, res, next) => {
     });
 });
 
-router.put("/changecategory", async (req, res, next) => {
+router.put("/change-category", async (req, res, next) => {
   const { id } = req.query;
   const { categoryID } = req.body;
 
@@ -222,6 +200,41 @@ router.put("/changecategory", async (req, res, next) => {
     Collection.findByIdAndUpdate(
       id,
       { category: category._id },
+      (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+  });
+
+  promise
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+});
+
+router.put("/update", async (req, res, next) => {
+  const { id } = req.query;
+  const { categoryID, name, description } = req.body;
+
+  const category = await Category.findById(categoryID).exec();
+
+  if (!category) {
+    return res.status(404).json({
+      message: "Category not found",
+    });
+  }
+
+  let promise = new Promise((resolve, reject) => {
+    Collection.findByIdAndUpdate(
+      id,
+      { category: category._id, name: name, description: description },
       (err, result) => {
         if (err) {
           reject(err);
