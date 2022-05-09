@@ -84,8 +84,25 @@ router.get("/get-collection", (req, res, next) => {
   const { id } = req.query;
   let promise = new Promise((resolve, reject) => {
     Collection.findById(id)
-      .populate("assets")
-      .populate("owner", "name")
+      .populate({
+        path: "assets",
+        model: "Asset",
+        populate: {
+          path: "history",
+          populate: {
+            path: "from",
+            model: "User",
+            select: "walletAddress",
+          },
+          path: "history",
+          populate: {
+            path: "to",
+            model: "User",
+            select: "walletAddress",
+          },
+        },
+      })
+      .populate("owner", ["name", "bio"])
       .exec((err, result) => {
         if (err) {
           reject(err);

@@ -25,7 +25,7 @@ var app = express();
 const corsOpts = {
   origin: "*",
 
-  methods: ["GET", "POST", "PUT"],
+  methods: ["GET", "POST", "PUT", "PATCH"],
 };
 
 // view engine setup

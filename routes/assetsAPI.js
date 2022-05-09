@@ -9,13 +9,20 @@ const Event = require("../schema/EventSchema");
 const User = require("../schema/UserSchema");
 const Collection = require("../schema/CollectionSchema");
 const Asset = require("../schema/AssetSchema");
+const { parse } = require("path");
 
 let upload = multer({ storage: memoryStorage() });
 
 //with IPFS
 router.post("/mint", async (req, res, next) => {
-  const { uriID, name, description, currentOwnerID, currentCollectionID } =
-    req.body;
+  const {
+    uriID,
+    name,
+    description,
+    currentOwnerID,
+    currentCollectionID,
+    tokenId,
+  } = req.body;
 
   try {
     const user = await User.findById(currentOwnerID).exec();
@@ -30,6 +37,7 @@ router.post("/mint", async (req, res, next) => {
     await event.save();
 
     const asset = new Asset({
+      tokenId: tokenId,
       uriID: uriID,
       name: name,
       currentOwner: user._id,
@@ -39,7 +47,9 @@ router.post("/mint", async (req, res, next) => {
     });
 
     user.ownedAssets = [...user.ownedAssets, asset._id];
+    collection.assets = [...collection.assets, asset._id];
     await user.save();
+    await collection.save();
 
     asset.save((err, result) => {
       if (err) {
@@ -257,16 +267,14 @@ router.post("/sold", async (req, res, next) => {
 });
 
 //update price
-router.put("/update-price", (req, res, next) => {
+router.patch("/update-price", (req, res, next) => {
   const { id, price } = req.body;
   let promise = new Promise((resolve, reject) => {
     const assets = Asset.findById(id).exec();
     assets.then((asset) => {
       asset.currentPrice = price;
-      asset.prevPrice = [
-        ...asset.prevPrice,
-        { price: price, updatedAt: Date.now() },
-      ];
+      asset.prevPrice.push(price, Date.now());
+      asset.status = "Sale";
       asset.save();
       resolve(asset);
     });

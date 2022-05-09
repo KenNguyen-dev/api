@@ -3,6 +3,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const assetSchema = new Schema({
+  tokenId: {
+    type: String,
+    required: true,
+    immutable: true,
+  },
   uriID: {
     type: String,
     required: true,
