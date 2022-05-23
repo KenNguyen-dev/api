@@ -208,19 +208,15 @@ router.put("update-status", async (req, res, next) => {
   }
 });
 
-router.put("/listing", async (req, res, next) => {
-  const { id } = req.query;
-  const { status, price } = req.body;
+router.patch("/listing", async (req, res, next) => {
+  const { id, status, price } = req.body;
   try {
     const asset = await Asset.findById(id).exec();
     asset.status = status;
     asset.currentPrice = price;
-    asset.prevPrice = [
-      ...asset.prevPrice,
-      { price: price, updatedAt: Date.now() },
-    ];
+    asset.prevPrice.push(price, Date.now());
     await asset.save();
-    res.status(200).send("List asset on sale successfully");
+    res.status(200).send("List on marketplace successfully");
   } catch {
     res.status(400).send("Error updating asset status");
   }
@@ -291,9 +287,14 @@ router.patch("/update-price", (req, res, next) => {
   const { id, price } = req.body;
   let promise = new Promise((resolve, reject) => {
     const assets = Asset.findById(id).exec();
+    const newPrice = {
+      price: price,
+      updatedAt: Date.now(),
+    }
+    
     assets.then((asset) => {
       asset.currentPrice = price;
-      asset.prevPrice.push(price, Date.now());
+      asset.prevPrice.push(newPrice);
       asset.status = "Sale";
       asset.save();
       resolve(asset);

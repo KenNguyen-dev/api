@@ -39,7 +39,7 @@ const assetSchema = new Schema({
     default: 0,
     min: 0,
   },
-  prevPrice: [{ type: Number, default: 0, min: 0 }, { updatedAt: Date }],
+  prevPrice: { type : Array , "default" : [] },
   history: [
     {
       type: Schema.Types.ObjectId,
