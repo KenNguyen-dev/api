@@ -10,6 +10,7 @@ const User = require("../schema/UserSchema");
 const Collection = require("../schema/CollectionSchema");
 const Asset = require("../schema/AssetSchema");
 const { parse } = require("path");
+const AssetSchema = require("../schema/AssetSchema");
 
 let upload = multer({ storage: memoryStorage() });
 
@@ -22,6 +23,7 @@ router.post("/mint", async (req, res, next) => {
     currentOwnerID,
     currentCollectionID,
     tokenId,
+    thumb_type
   } = req.body;
 
   try {
@@ -44,6 +46,7 @@ router.post("/mint", async (req, res, next) => {
       currentCollection: collection._id,
       description: description,
       history: event._id,
+      thumb_type
     });
 
     user.ownedAssets = [...user.ownedAssets, asset._id];
@@ -60,6 +63,23 @@ router.post("/mint", async (req, res, next) => {
   } catch (err) {
     res.status(400).send("Error creating asset " + err);
   }
+});
+
+router.get("/assets-nft", async (req, res) => {
+  let filterParams = req.query || {},
+    startIndex =
+      (filterParams?.page_index || 1 - 1) * (filterParams?.page_size || 10),
+    endIndex =
+      (filterParams?.page_index || 1) * (filterParams?.page_size || 10);
+  const result = await AssetSchema.find(filterParams);
+  const listAll = await AssetSchema.find();
+  res.json({
+    totalAll: listAll.length,
+    total: result.length,
+    page_index: filterParams?.page_index || 1,
+    page_size: filterParams?.page_size || 10,
+    result: result.slice(startIndex, endIndex),
+  });
 });
 
 //#region without IPFS

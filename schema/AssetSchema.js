@@ -50,6 +50,10 @@ const assetSchema = new Schema({
     type: String,
     default: "Not Listing",
   },
+  thumb_type: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = mongoose.model("Asset", assetSchema);

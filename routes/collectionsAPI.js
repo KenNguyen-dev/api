@@ -70,7 +70,7 @@ router.delete("/delete", (req, res, next) => {
     });
   });
 
-  promise
+  promise 
     .then((result) => {
       res.status(200).send(result);
     })
