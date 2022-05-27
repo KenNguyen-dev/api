@@ -23,7 +23,7 @@ router.post("/mint", async (req, res, next) => {
     currentOwnerID,
     currentCollectionID,
     tokenId,
-    thumb_type
+    thumb_type,
   } = req.body;
 
   try {
@@ -46,7 +46,7 @@ router.post("/mint", async (req, res, next) => {
       currentCollection: collection._id,
       description: description,
       history: event._id,
-      thumb_type
+      thumb_type,
     });
 
     user.ownedAssets = [...user.ownedAssets, asset._id];
@@ -210,11 +210,15 @@ router.put("update-status", async (req, res, next) => {
 
 router.patch("/listing", async (req, res, next) => {
   const { id, status, price } = req.body;
+  const newPrice = {
+    price: price,
+    updatedAt: Date.now(),
+  };
   try {
     const asset = await Asset.findById(id).exec();
     asset.status = status;
     asset.currentPrice = price;
-    asset.prevPrice.push(price, Date.now());
+    asset.prevPrice.push(newPrice);
     await asset.save();
     res.status(200).send("List on marketplace successfully");
   } catch {
@@ -245,12 +249,12 @@ router.delete("/delete", (req, res, next) => {
 });
 
 //update current owner
-router.post("/sold", async (req, res, next) => {
-  const { id, currentOwnerID, newOwnerID, price } = req.body;
+router.post("/transaction", async (req, res, next) => {
+  const { id, currentOwnerId, newOwnerId, price } = req.body;
 
   try {
-    const currentOwner = await User.findById(currentOwnerID).exec();
-    const newOwner = await User.findById(newOwnerID).exec();
+    const currentOwner = await User.findById(currentOwnerId).exec();
+    const newOwner = await User.findById(newOwnerId).exec();
     const asset = await Asset.findById(id).exec();
 
     if (asset.currentOwner.toString() !== currentOwner._id.toString()) {
@@ -264,20 +268,21 @@ router.post("/sold", async (req, res, next) => {
       price: price,
       date: Date.now(),
     });
-    currentOwner.ownedAssets = currentOwner.ownedAssets.filter(
-      (assetID) => assetID != id
-    );
-
-    newOwner.ownedAssets = [...newOwner.ownedAssets, id];
+    const assetIndex = currentOwner.ownedAssets.indexOf(asset._id);
+    if (assetIndex > -1) {
+      currentOwner.ownedAssets.splice(assetIndex, 1);
+    }
+    newOwner.ownedAssets.push(asset._id);
     asset.currentOwner = newOwner._id;
-    asset.history = [...asset.history, event._id];
+    asset.history.push(event);
     asset.status = "Not Listing";
     await event.save();
     await currentOwner.save();
     await newOwner.save();
     await asset.save();
     res.status(200).send("Asset sold successfully");
-  } catch {
+  } catch (err) {
+    console.log(err);
     res.status(400).send("Error sold");
   }
 });
@@ -290,8 +295,8 @@ router.patch("/update-price", (req, res, next) => {
     const newPrice = {
       price: price,
       updatedAt: Date.now(),
-    }
-    
+    };
+
     assets.then((asset) => {
       asset.currentPrice = price;
       asset.prevPrice.push(newPrice);
