@@ -153,7 +153,6 @@ router.get("/assets-nft", async (req, res) => {
 
 router.get("/get-asset", async (req, res, next) => {
   const { id } = req.query;
-  console.log(id);
   try {
     // const asset = await Asset.findById(id)
     //   .populate('history')
@@ -194,11 +193,12 @@ router.get("/get-asset", async (req, res, next) => {
   }
 });
 
-router.put("update-status", async (req, res, next) => {
-  const { id } = req.query;
-  const { status } = req.body;
+router.patch("/update-status", async (req, res, next) => {
+  const { id, status } = req.body;
+  console.log(id);
+  console.log(status);
 
-  if (status == "Sale" || status == "Auction" || status == "Not Listing") {
+  if (status == "Sale" || status == "On Auction" || status == "Not Listing") {
     const asset = await Asset.findById(id).exec();
     asset.status = status;
     await asset.save();
@@ -315,7 +315,7 @@ router.patch("/update-price", (req, res, next) => {
     });
 });
 
-router.put("change-collection", async (req, res, next) => {
+router.put("/change-collection", async (req, res, next) => {
   const { id, collectionID } = req.body;
   try {
     const asset = await Asset.findById(id).exec();
