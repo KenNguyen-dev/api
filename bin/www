@@ -7,7 +7,12 @@
 var app = require("../app");
 var debug = require("debug")("web-app:server");
 var http = require("http");
-
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getUsersInRoom,
+} = require("../socket/users");
 /**
  * Get port from environment and store in Express.
  */
@@ -20,14 +25,89 @@ app.set("port", port);
  */
 
 var server = http.createServer(app);
+const io = require("socket.io")(server, {
+  cors: {
+    credentials: true,
+    origin: ["http://localhost:3000"],
+  },
+});
+
+//#region Socket.io
+io.on("connection", (socket) => {
+  socket.on("join", ({ name, room }, callback) => {
+    try {
+      console.log("join", name, room);
+      const { error, user } = addUser({ id: socket.id, name, room });
+
+      if (user.room == undefined) return;
+
+      socket.join(user.room);
+      console.log(user);
+
+      console.log(`${user.name} has joined ${user.room}`);
+
+      socket.emit("message", {
+        user: "admin",
+        text: `${user.name}, welcome to room ${user.room}.`,
+      });
+      socket.broadcast
+        .to(user.room)
+        .emit("message", { user: "admin", text: `${user.name} has joined!` });
+
+      io.to(user.room).emit("roomData", {
+        room: user.room,
+        users: getUsersInRoom(user.room),
+      });
+
+      callback();
+    } catch {
+      console.log("error join");
+    }
+  });
+
+  socket.on("disconnect", () => {
+    try {
+      const user = removeUser(socket.id);
+
+      if (user) {
+        io.to(user.room).emit("message", {
+          user: "Admin",
+          text: `${user.name} has left.`,
+        });
+        io.to(user.room).emit("roomData", {
+          room: user.room,
+          users: getUsersInRoom(user.room),
+        });
+      }
+    } catch {
+      console.log("error leave");
+    }
+  });
+
+  socket.on("bid", ({ amount, name }) => {
+    try {
+      const user = getUser(name);
+
+      if (user.room == undefined) return;
+
+      console.log(`${user.name} has bid ${amount}`);
+
+      io.to(user.room).emit("bidNotif", { user: user.name, amount: amount });
+    } catch {
+      console.log("error bid");
+    }
+  });
+});
+
+//#endregion
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
 server.listen(port, (err) => {
-  if(err) console.log("Error: " + err);
-  else console.log("Server is running on port " + port )
+  if (err) console.log("Error: " + err);
+  else console.log("Server is running on port " + port);
 });
 server.on("error", onError);
 server.on("listening", onListening);
