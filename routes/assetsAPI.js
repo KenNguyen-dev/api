@@ -30,7 +30,7 @@ router.post("/mint", async (req, res, next) => {
     const user = await User.findById(currentOwnerID).exec();
     const collection = await Collection.findById(currentCollectionID).exec();
     const event = new Event({
-      type: "mint",
+      type: "Mint",
       from: null,
       to: user._id,
       date: Date.now(),
@@ -250,7 +250,7 @@ router.delete("/delete", (req, res, next) => {
 
 //update current owner
 router.post("/transaction", async (req, res, next) => {
-  const { id, currentOwnerId, newOwnerId, price } = req.body;
+  const { id, currentOwnerId, newOwnerId, price, status } = req.body;
 
   try {
     const currentOwner = await User.findById(currentOwnerId).exec();
@@ -262,7 +262,7 @@ router.post("/transaction", async (req, res, next) => {
     }
 
     const event = new Event({
-      type: "transfer",
+      type: status,
       from: currentOwner._id,
       to: newOwner._id,
       price: price,
