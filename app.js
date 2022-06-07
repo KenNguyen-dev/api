@@ -12,10 +12,6 @@ var usersRouter = require("./routes/usersAPI");
 var assetsRoute = require("./routes/assetsAPI");
 var collectionsRoute = require("./routes/collectionsAPI");
 var categoriesRoute = require("./routes/categoriesAPI");
-var partnerTypeAPI = require("./routes/partnerTypeAPI");
-var partnerAPI = require("./routes/partnerAPI");
-var voucherAPI = require("./routes/voucherAPI");
-var customerAPI = require("./routes/customerAPI");
 var uploadAPI = require("./routes/uploadAPI");
 
 var app = express();
@@ -50,10 +46,6 @@ app.use("/users", usersRouter);
 app.use("/assets", assetsRoute);
 app.use("/collections", collectionsRoute);
 app.use("/categories", categoriesRoute);
-app.use("/partnertype", partnerTypeAPI);
-app.use("/partner", partnerAPI);
-app.use("/voucher", voucherAPI);
-app.use("/customer", customerAPI);
 app.use("/upload", uploadAPI);
 
 //#region Catch Error

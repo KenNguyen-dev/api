@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const uri = process.env.MONGODB_URI;
-const User = require("../schema/UserSchema");
-const Category = require("../schema/CategorySchema");
 
 async function main() {
   try {

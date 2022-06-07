@@ -61,10 +61,6 @@ router.get("/get-user", async (req, res, next) => {
 
   try {
     const user = await User.findOne({ walletAddress: walletAddress })
-      .populate("ownedAssets")
-      .populate("ownedCollections")
-      .populate("favoriteAssets")
-      .exec();
     if (!user) {
       throw new Error("User not found");
     }

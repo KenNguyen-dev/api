@@ -70,7 +70,7 @@ router.delete("/delete", (req, res, next) => {
     });
   });
 
-  promise 
+  promise
     .then((result) => {
       res.status(200).send(result);
     })
@@ -236,22 +236,23 @@ router.put("/change-category", async (req, res, next) => {
     });
 });
 
-router.put("/update", async (req, res, next) => {
-  const { id } = req.query;
-  const { categoryID, name, description } = req.body;
+router.patch("/update", async (req, res, next) => {
+  const { id, categoryId, name, description } = req.body;
 
-  const category = await Category.findById(categoryID).exec();
+  if (categoryId != null) {
+    const category = await Category.findById(categoryId).exec();
 
-  if (!category) {
-    return res.status(404).json({
-      message: "Category not found",
-    });
+    if (!category) {
+      return res.status(404).json({
+        message: "Category not found",
+      });
+    }
   }
 
   let promise = new Promise((resolve, reject) => {
     Collection.findByIdAndUpdate(
       id,
-      { category: category._id, name: name, description: description },
+      { category: categoryId, name: name, description: description },
       (err, result) => {
         if (err) {
           reject(err);
