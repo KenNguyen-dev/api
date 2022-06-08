@@ -2,6 +2,7 @@ const route = require("express").Router();
 const upload = require("../config/multer");
 const firebase = require("../config/firebase");
 var db = require("../config/dbconfig");
+const { ObjectId } = require("mongodb");
 
 const imageTypes = ["image/jpeg", "image/png", "image/gif"];
 
@@ -26,7 +27,7 @@ route.post("/", image, (req, res) => {
     }
 });
 
-route.post("/save", image, async (req, res) => {
+route.post("/save/:id", image, async (req, res) => {
     const file = req?.file;
     const data = req?.body;
     if (imageTypes.includes(file?.mimetype)) {
@@ -40,17 +41,19 @@ route.post("/save", image, async (req, res) => {
             console.log("Error uploading file to bucket:", err);
         });
         blobWriter.end(file.buffer);
-        await db.collection(data?.collection_name).updateOne(
-            { _id: req.params.id },
+        await db.collection(data?.collection_name).findOneAndUpdate(
+            { _id: new ObjectId(req.params.id) },
             {
                 $set: {
                     [data?.field_name]: `https://firebasestorage.googleapis.com/v0/b/nftmarketdb.appspot.com/o/${file.originalname}?alt=media`,
                 },
             },
-            (err, result) => {
+            async (err, result) => {
                 if(err) res.json("error")
+                console.log(await db.collection(data?.collection_name).findOne({_id: req.params.id}))
                 res.json({
-                    imageURL: `https://firebasestorage.googleapis.com/v0/b/nftmarketdb.appspot.com/o/${file.originalname}?alt=media`
+                    imageURL: `https://firebasestorage.googleapis.com/v0/b/nftmarketdb.appspot.com/o/${file.originalname}?alt=media`,
+                    result
                 })
             }
         );
