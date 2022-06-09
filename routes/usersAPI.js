@@ -8,6 +8,7 @@ const firebase = require("../config/firebase");
 const { ObjectId } = require("mongodb");
 const User = require("../schema/UserSchema");
 const Collection = require("../schema/CollectionSchema");
+const Asset = require("../schema/AssetSchema");
 
 let upload = multer({ storage: memoryStorage() });
 
@@ -60,7 +61,7 @@ router.get("/get-user", async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ walletAddress: walletAddress })
+    const user = await User.findOne({ walletAddress: walletAddress });
     if (!user) {
       throw new Error("User not found");
     }
@@ -379,6 +380,45 @@ router.put("/update/:id", (req, res) => {
     .catch((err) => {
       res.status(400).send("Error: " + err);
     });
+});
+
+router.patch("/add-to-favorite", async (req, res) => {
+  const { userId, assetId } = req.body;
+  try {
+    const user = await User.findById(userId).exec();
+    const asset = await Asset.findById(assetId).exec();
+
+    user.favoriteAssets.push(asset);
+    asset.favoriteCount += 1;
+
+    await asset.save();
+    await user.save();
+
+    res.status(200).send(user);
+  } catch (e) {
+    console.log(e);
+    res.status(400).json(e);
+  }
+});
+
+router.patch("/remove-from-favorite", async (req, res) => {
+  const { userId, assetId } = req.body;
+  try {
+    const user = await User.findById(userId).exec();
+    const asset = await Asset.findById(assetId).exec();
+
+    const id = user.favoriteAssets.indexOf(asset);
+    user.favoriteAssets.splice(id, 1);
+    asset.favoriteCount -= 1;
+
+    await asset.save();
+    await user.save();
+
+    res.status(200).send(user);
+  } catch (e) {
+    console.log(e);
+    res.status(400).json(e);
+  }
 });
 
 module.exports = router;
