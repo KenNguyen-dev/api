@@ -315,11 +315,37 @@ router.patch("/update-price", (req, res, next) => {
     });
 });
 
-router.put("/change-collection", async (req, res, next) => {
-  const { id, collectionID } = req.body;
+router.patch("/update", (req, res, next) => {
+  const { id, name, description } = req.body;
+  let promise = new Promise((resolve, reject) => {
+    const asset = Asset.findById(id).exec();
+
+    if (!asset) {
+      reject();
+    }
+
+    asset.then((asset) => {
+      asset.name = name;
+      asset.description = description;
+      asset.save();
+      resolve(asset);
+    });
+  });
+
+  promise
+    .then((result) => {
+      res.status(200).send(result);
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+});
+
+router.patch("/change-collection", async (req, res, next) => {
+  const { id, collectionId } = req.body;
   try {
     const asset = await Asset.findById(id).exec();
-    const collection = await Collection.findById(collectionID).exec();
+    const collection = await Collection.findById(collectionId).exec();
     asset.currentCollection = collection._id;
     asset.save();
     res.status(200).send("Asset collection updated");

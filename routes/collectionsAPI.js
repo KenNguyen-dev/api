@@ -15,10 +15,9 @@ let upload = multer({ storage: memoryStorage() });
 
 //create new collection
 router.post("/create", async (req, res, next) => {
-  const { name, description, userID, categoryID } = req.body;
+  const { name, description, userId, categoryId } = req.body;
 
-  const user = await User.findById(userID).exec();
-  const category = await Category.findById(categoryID).exec();
+  const user = await User.findById(userId).exec();
 
   if (!user) {
     return res.status(404).json({
@@ -26,35 +25,38 @@ router.post("/create", async (req, res, next) => {
     });
   }
 
-  if (!category) {
-    return res.status(404).json({
-      message: "Category not found",
-    });
+  try {
+    if (categoryId != null) {
+      const category = await Category.findById(categoryId).exec();
+
+      const collection = new Collection({
+        name: name,
+        description: description,
+        owner: user._id,
+        category: category,
+      });
+
+      user.ownedCollections.push(collection);
+
+      await collection.save();
+      await user.save();
+      res.sendStatus(200);
+    } else {
+      const collection = new Collection({
+        name: name,
+        description: description,
+        owner: user._id,
+      });
+
+      await collection.save();
+      user.ownedCollections.push(collection);
+
+      res.sendStatus(200);
+      await user.save();
+    }
+  } catch (err) {
+    res.status(400).send(err);
   }
-
-  let promise = new Promise((resolve, reject) => {
-    const collection = new Collection({
-      name: name,
-      description: description,
-      owner: user._id,
-      category: category._id,
-    });
-    collection.save((err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
-    });
-  });
-
-  promise
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(400).send(err);
-    });
 });
 
 //delete collection by id
@@ -201,11 +203,10 @@ router.delete("/remove-asset", async (req, res, next) => {
     });
 });
 
-router.put("/change-category", async (req, res, next) => {
-  const { id } = req.query;
-  const { categoryID } = req.body;
+router.patch("/change-category", async (req, res, next) => {
+  const { id, categoryId } = req.body;
 
-  const category = await Category.findById(categoryID).exec();
+  const category = await Category.findById(categoryId).exec();
 
   if (!category) {
     return res.status(404).json({
