@@ -154,11 +154,6 @@ router.get("/assets-nft", async (req, res) => {
 router.get("/get-asset", async (req, res, next) => {
   const { id } = req.query;
   try {
-    // const asset = await Asset.findById(id)
-    //   .populate('history')
-    //   .populate('currentCollection', 'name')
-    //   .populate('currentOwner', ['name', 'bio'])
-    //   .exec();
     const asset = await Asset.findById(id)
       .populate([
         {
@@ -183,7 +178,7 @@ router.get("/get-asset", async (req, res, next) => {
         },
         {
           path: "currentOwner",
-          select: ["name", "bio"],
+          select: ["name", "bio", "walletAddress"],
         },
       ])
       .exec();
