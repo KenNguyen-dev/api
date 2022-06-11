@@ -205,15 +205,17 @@ router.patch("/update-status", async (req, res, next) => {
 
 router.patch("/listing", async (req, res, next) => {
   const { id, status, price } = req.body;
-  const newPrice = {
-    price: price,
-    updatedAt: Date.now(),
-  };
   try {
     const asset = await Asset.findById(id).exec();
     asset.status = status;
     asset.currentPrice = price;
-    asset.prevPrice.push(newPrice);
+    if(status == "Sale") {
+      const newPrice = {
+        price: price,
+        updatedAt: Date.now(),
+      };
+      asset.prevPrice.push(newPrice);
+    }
     await asset.save();
     res.status(200).send("List on marketplace successfully");
   } catch {
@@ -245,7 +247,7 @@ router.delete("/delete", (req, res, next) => {
 
 //update current owner
 router.post("/transaction", async (req, res, next) => {
-  const { id, currentOwnerId, newOwnerId, price, status } = req.body;
+  const { id, currentOwnerId, newOwnerId, price, type } = req.body;
 
   try {
     const currentOwner = await User.findById(currentOwnerId).exec();
@@ -257,7 +259,7 @@ router.post("/transaction", async (req, res, next) => {
     }
 
     const event = new Event({
-      type: status,
+      type: type,
       from: currentOwner._id,
       to: newOwner._id,
       price: price,
@@ -270,6 +272,14 @@ router.post("/transaction", async (req, res, next) => {
     newOwner.ownedAssets.push(asset._id);
     asset.currentOwner = newOwner._id;
     asset.history.push(event);
+    if(type == "Auction") {
+      const newPrice = {
+        price: price,
+        updatedAt: Date.now(),
+      };
+
+      asset.prevPrice.push(newPrice);
+    }
     asset.status = "Not Listing";
     await event.save();
     await currentOwner.save();
