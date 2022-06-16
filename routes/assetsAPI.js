@@ -9,8 +9,8 @@ const Event = require("../schema/EventSchema");
 const User = require("../schema/UserSchema");
 const Collection = require("../schema/CollectionSchema");
 const Asset = require("../schema/AssetSchema");
-const { parse } = require("path");
 const AssetSchema = require("../schema/AssetSchema");
+const { omit } = require("lodash");
 
 let upload = multer({ storage: memoryStorage() });
 
@@ -68,19 +68,47 @@ router.post("/mint", async (req, res, next) => {
 router.get("/assets-nft", async (req, res) => {
   let filterParams = req.query || {},
     startIndex =
-      (filterParams?.page_index || 1 - 1) * (filterParams?.page_size || 10),
+      (parseInt(filterParams?.page_index || 1) - 1) *
+      (parseInt(filterParams?.page_size) || 9),
     endIndex =
-      (filterParams?.page_index || 1) * (filterParams?.page_size || 10);
-  const result = await AssetSchema.find(filterParams);
+      (parseInt(filterParams?.page_index) || 1) *
+      (parseInt(filterParams?.page_size) || 9);
+  if (filterParams?.startPrice) {
+    filterParams = {
+      ...filterParams,
+      currentPrice: { $gte: filterParams?.startPrice },
+    };
+  }
+  if (filterParams?.endPrice) {
+    filterParams = {
+      ...filterParams,
+      currentPrice: { $lte: filterParams?.endPrice },
+    };
+  }
+  if (filterParams?.thumb_type?.lenght > 0) {
+    filterParams = {
+      ...filterParams,
+      thumb_type: { $in: (filterParams?.thumb_type || [])?.map(i => parseInt(i)) } || [],
+    };
+  }
+
+  const omitParams = ["page_index", "page_size", "startPrice", "endPrice"];
+  const result = await AssetSchema.find(omit(filterParams, omitParams));
   const listAll = await AssetSchema.find();
   res.json({
     totalAll: listAll.length,
     total: result.length,
-    page_index: filterParams?.page_index || 1,
-    page_size: filterParams?.page_size || 10,
+    page_index: parseInt(filterParams?.page_index) || 1,
+    page_size: parseInt(filterParams?.page_size) || 9,
     result: result.slice(startIndex, endIndex),
   });
 });
+
+router.get("/favorite", async (req, res) => {
+  const bestLikeAsset = await Asset.findOne().sort({favoriteCount: -1})
+  // console.log(bestLikeAsset)
+  res.json(bestLikeAsset);
+})
 
 //#region without IPFS
 
@@ -209,7 +237,7 @@ router.patch("/listing", async (req, res, next) => {
     const asset = await Asset.findById(id).exec();
     asset.status = status;
     asset.currentPrice = price;
-    if(status == "Sale") {
+    if (status == "Sale") {
       const newPrice = {
         price: price,
         updatedAt: Date.now(),
@@ -272,7 +300,7 @@ router.post("/transaction", async (req, res, next) => {
     newOwner.ownedAssets.push(asset._id);
     asset.currentOwner = newOwner._id;
     asset.history.push(event);
-    if(type == "Auction") {
+    if (type == "Auction") {
       const newPrice = {
         price: price,
         updatedAt: Date.now(),
