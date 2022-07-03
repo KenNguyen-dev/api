@@ -19,7 +19,7 @@ var app = express();
 //#region View Engine
 
 const corsOpts = {
-  origin: "*",
+  origin: ['http://localhost:3000', 'https://huft-nft-marketplace-kappa.vercel.app'],
 
   methods: ["GET", "POST", "PUT", "PATCH"],
 };
